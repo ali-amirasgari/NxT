@@ -1,0 +1,70 @@
+# ─── Dependencies ────────────────────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+
+# ─── Environment Variables ───────────────────────────────────────────────────
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+*.env
+
+# ─── IDE / Editor ────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ─── Next.js / React ────────────────────────────────────────────────────────
+.next/
+out/
+.cache/
+
+# ─── Build outputs ───────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── Docker ──────────────────────────────────────────────────────────────────
+# Keep docker-compose.yml tracked, but ignore ephemeral Docker data
+docker-compose.override.yml
+
+# ─── Testing ─────────────────────────────────────────────────────────────────
+coverage/
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+.mypy_cache/
+
+# ─── Terraform ───────────────────────────────────────────────────────────────
+*.tfstate
+*.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+
+# ─── Misc ────────────────────────────────────────────────────────────────────
+*.bak
+*.tmp
+*.temp
+.gemini/

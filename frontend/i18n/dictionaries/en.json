@@ -1,0 +1,116 @@
+{
+  "home": {
+    "title": "Turn intention into action.",
+    "subtitle": "Commit, prove, and get verified with AI.",
+    "paragraphOr": "or the",
+    "paragraphEnd": "center.",
+    "ctaPrimary": "Deploy Now",
+    "ctaSecondary": "Documentation",
+    "links": {
+      "templates": "Templates",
+      "learning": "Learning"
+    },
+    "hint": "To get started, edit the page.tsx file."
+  },
+  "landing": {
+    "nav": {
+      "product": "Product",
+      "features": "Features",
+      "how": "How it works",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "cta": "Get Started"
+    },
+    "hero": {
+      "badge": "Commit. Prove. Resolve.",
+      "title": "Build habits with verifiable commitments.",
+      "subtitle": "NxT turns goals into a simple cycle: commit points, do the work, submit proof, and let AI validate your action.",
+      "ctaPrimary": "Start a commitment",
+      "ctaSecondary": "See how it works"
+    },
+    "stats": {
+      "oneLabel": "Verified actions",
+      "oneValue": "24/7",
+      "twoLabel": "Proof types",
+      "twoValue": "Photo · OCR · Location",
+      "threeLabel": "Designed for streaks",
+      "threeValue": "Daily momentum"
+    },
+    "features": {
+      "title": "Designed for execution",
+      "subtitle": "Clean UI, strong incentives, and a proof layer you can trust.",
+      "items": [
+        {
+          "title": "Verifiable proof",
+          "desc": "Submit photo, OCR, location, or activity signals. AI checks consistency and reduces fake completions."
+        },
+        {
+          "title": "Points with consequences",
+          "desc": "Stake virtual points to increase commitment. Win back more when you finish—lose them when you don't."
+        },
+        {
+          "title": "Gamified progress",
+          "desc": "Streaks, levels, and rewards that feel motivating without becoming noisy or childish."
+        }
+      ]
+    },
+    "how": {
+      "title": "Commit → Prove → Resolve",
+      "subtitle": "A loop that turns intention into measurable action.",
+      "steps": [
+        {
+          "title": "Commit",
+          "desc": "Define a goal, duration, and stake points. The more it matters, the more you stake."
+        },
+        {
+          "title": "Prove",
+          "desc": "Upload evidence. Keep it simple: a photo, a screenshot, location check-in, or OCR text."
+        },
+        {
+          "title": "Resolve",
+          "desc": "AI validates the proof. If valid, you earn rewards. If not, you lose the stake."
+        }
+      ]
+    },
+    "pricing": {
+      "title": "Start free, upgrade later",
+      "subtitle": "NxT is built for momentum first. Premium comes after product-market fit.",
+      "cards": [
+        {
+          "title": "Free",
+          "price": "$0",
+          "desc": "Everything you need to begin proving action.",
+          "bullets": ["Unlimited goals", "Basic proof checks", "Streak tracking"]
+        },
+        {
+          "title": "NxT Pro (soon)",
+          "price": "—",
+          "desc": "Deeper validation and automation for serious builders.",
+          "bullets": ["Advanced AI checks", "Integrations", "Priority processing"]
+        }
+      ]
+    },
+    "faq": {
+      "title": "Questions, answered",
+      "items": [
+        {
+          "q": "Is this real money staking?",
+          "a": "Not yet. NxT starts with virtual points. A future phase can introduce real staking once the core loop is solid."
+        },
+        {
+          "q": "What proofs can I submit?",
+          "a": "Photos, OCR text extraction, location signals, and activity/screen-time style evidence depending on the goal type."
+        },
+        {
+          "q": "Can I use NxT with friends?",
+          "a": "Social accountability is planned next: squads, group challenges, and a verified activity feed."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Ready to turn intention into action?",
+      "subtitle": "Create your first commitment and make progress visible.",
+      "button": "Get Started"
+    }
+  }
+}
