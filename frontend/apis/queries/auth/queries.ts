@@ -13,20 +13,7 @@ export function useRegisterMutation() {
     mutationKey: QUERY_KEYS.auth.register,
     mutationFn: registerUser,
     onSuccess: (response) => {
-      const accessToken = response.access_token ?? response.access;
-      const refreshToken = response.refresh_token ?? response.refresh;
-
-      if (typeof window !== "undefined") {
-        if (accessToken) {
-          localStorage.setItem("access_token", accessToken);
-        }
-
-        if (refreshToken) {
-          localStorage.setItem("refresh_token", refreshToken);
-        }
-      }
-
-      router.push("/signin");
+      router.push(response.authenticated ? "/app" : "/signin");
     },
   });
 }
@@ -37,21 +24,8 @@ export function useLoginMutation() {
   return useMutation({
     mutationKey: QUERY_KEYS.auth.login,
     mutationFn: loginUser,
-    onSuccess: (response) => {
-      const accessToken = response.access_token ?? response.access;
-      const refreshToken = response.refresh_token ?? response.refresh;
-
-      if (typeof window !== "undefined") {
-        if (accessToken) {
-          localStorage.setItem("access_token", accessToken);
-        }
-
-        if (refreshToken) {
-          localStorage.setItem("refresh_token", refreshToken);
-        }
-      }
-
-      router.push("/landing");
+    onSuccess: () => {
+      router.push("/app");
     },
   });
 }

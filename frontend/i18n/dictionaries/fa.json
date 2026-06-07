@@ -112,5 +112,139 @@
       "subtitle": "اولین تعهدت را بساز و پیشرفت را قابل دیدن کن.",
       "button": "شروع"
     }
+  },
+  "app": {
+    "navigation": {
+      "home": "خانه",
+      "explore": "کاوش",
+      "goals": "هدف‌ها",
+      "leaderboard": "رتبه‌بندی",
+      "profile": "پروفایل",
+      "createGoal": "ساخت هدف"
+    },
+    "explore": {
+      "title": "کاوش",
+      "description": "هدف‌ها، مدارک، عکس‌ها و ویدیوهای جامعه",
+      "searchLabel": "جست‌وجو در کاوش",
+      "searchPlaceholder": "جست‌وجوی هدف یا افراد",
+      "filters": {
+        "forYou": "برای تو",
+        "fitness": "ورزش",
+        "coding": "برنامه‌نویسی",
+        "proof": "مدرک"
+      }
+    },
+    "exploreSearch": {
+      "back": "بازگشت به کاوش",
+      "searchLabel": "جست‌وجوی حساب‌ها، هدف‌ها و برچسب‌ها",
+      "searchPlaceholder": "جست‌وجوی حساب، هدف، برچسب",
+      "clear": "پاک کردن جست‌وجو",
+      "recentTitle": "جست‌وجوهای اخیر",
+      "resultsTitle": "نتایج جست‌وجو",
+      "suggestedTitle": "هدف‌های پیشنهادی",
+      "emptyTitle": "نتیجه‌ای پیدا نشد",
+      "emptyDescription": "نام، هدف یا برچسب دیگری را امتحان کن.",
+      "progress": "پیشرفت",
+      "filters": {
+        "all": "همه",
+        "accounts": "حساب‌ها",
+        "goals": "هدف‌ها",
+        "tags": "برچسب‌ها"
+      }
+    },
+    "homeDashboard": {
+      "headerTitle": "خانه",
+      "headerSubtitle": "تمرکز این هفته‌ات را ببین.",
+      "notifications": "باز کردن اعلان‌ها",
+      "activeGoalsTitle": "هدف‌های فعال",
+      "activeGoalsHint": "روی هدف‌هایی که اکنون فعال‌اند به حرکت ادامه بده.",
+      "goalOneTitle": "هر صبح ۵ کیلومتر دویدن",
+      "goalOneMeta": "۶۵٪ · مهلت ۲۵ خرداد",
+      "goalTwoTitle": "مطالعه ۲۰ صفحه",
+      "goalTwoMeta": "۴۲٪ · عادت روزانه",
+      "goalThreeTitle": "انتشار نسخه جدید پورتفولیو",
+      "goalThreeMeta": "هدف تیمی · ۸ عضو",
+      "progressLabel": "پیشرفت",
+      "summaryTitle": "این هفته",
+      "summaryLine": "۴ مدرک · ۳۲۰ امتیاز · استریک ۶ روزه",
+      "summaryHint": "یک نمای سریع از وضعیت هدف‌ها قبل از بسته شدن هفته.",
+      "summaryAction": "مشاهده هدف‌ها",
+      "summaryCommittedValue": "۳",
+      "summaryCommittedLabel": "هدف متعهدشده",
+      "summaryCompletedValue": "۷",
+      "summaryCompletedLabel": "مدرک ثبت‌شده",
+      "summaryStreakValue": "۵ روز",
+      "summaryStreakLabel": "استریک فعلی"
+    },
+    "profile": {
+      "openSettings": "باز کردن تنظیمات",
+      "editProfile": "ویرایش پروفایل",
+      "posts": "پست‌ها",
+      "goals": "هدف‌ها",
+      "points": "امتیاز",
+      "streak": "استریک",
+      "shared": "اشتراک‌ها"
+    },
+    "profileSettings": {
+      "title": "تنظیمات",
+      "back": "بازگشت به پروفایل",
+      "privateTitle": "پروفایل خصوصی",
+      "privateDescription": "فقط افراد تاییدشده هدف‌هایت را می‌بینند",
+      "appearanceTitle": "ظاهر",
+      "appearanceDescription": "روشن / تاریک",
+      "notificationsTitle": "اعلان‌ها",
+      "notificationsDescription": "یادآوری مدارک و فعالیت اجتماعی",
+      "save": "ذخیره تنظیمات",
+      "saved": "تنظیمات ذخیره شد"
+    },
+    "editProfile": {
+      "title": "ویرایش پروفایل",
+      "back": "بازگشت به پروفایل",
+      "save": "ذخیره",
+      "changeBanner": "تغییر تصویر بنر",
+      "profilePhoto": "تصویر پروفایل",
+      "name": "نام",
+      "username": "نام کاربری",
+      "bio": "بیو",
+      "update": "به‌روزرسانی پروفایل",
+      "updated": "پروفایل به‌روزرسانی شد"
+    },
+    "goals": {
+      "title": "هدف‌ها",
+      "description": "هر هدف را باز کن و پیشرفت، امتیاز، برنامه و مدارک آن را ببین.",
+      "progress": "پیشرفت"
+    },
+    "details": {
+      "goalTitle": "جزئیات هدف",
+      "postTitle": "پست",
+      "back": "بازگشت",
+      "more": "گزینه‌های بیشتر",
+      "progress": "پیشرفت",
+      "stake": "امتیاز در خطر",
+      "schedule": "برنامه",
+      "like": "پسندیدن",
+      "comment": "نظر",
+      "share": "اشتراک‌گذاری",
+      "submitProof": "ارسال مدرک"
+    },
+    "comments": {
+      "title": "نظرها",
+      "description": "مشاهده و افزودن نظر",
+      "replies": "۱۸ پاسخ",
+      "placeholder": "افزودن نظر...",
+      "send": "ارسال نظر",
+      "reply": "پاسخ",
+      "like": "پسندیدن",
+      "added": "نظر اضافه شد"
+    },
+    "share": {
+      "title": "اشتراک‌گذاری با",
+      "description": "ارسال این پست برای مخاطبان یا کپی لینک",
+      "search": "جست‌وجوی مخاطبان",
+      "send": "ارسال",
+      "sent": "ارسال شد",
+      "copy": "کپی لینک",
+      "copied": "لینک کپی شد"
+    }
   }
 }

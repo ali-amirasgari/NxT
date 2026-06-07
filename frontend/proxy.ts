@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { defaultLocale, isLocale, locales } from "./i18n/config";
+import { hasAuthCookies } from "@/lib/auth/cookies";
+import appConfig from "@/lib/config";
+import { defaultLocale, isLocale, locales } from "@/i18n/config";
 
 function pickLocaleFromAcceptLanguage(headerValue: string | null) {
   if (!headerValue) return defaultLocale;
@@ -23,7 +25,7 @@ function pickLocaleFromAcceptLanguage(headerValue: string | null) {
   return defaultLocale;
 }
 
-export function middleware(request: NextRequest) {
+function withLocale(request: NextRequest) {
   const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value;
   const locale = isLocale(cookieLocale)
     ? cookieLocale
@@ -47,6 +49,47 @@ export function middleware(request: NextRequest) {
   }
 
   return response;
+}
+
+function redirectWithLocale(request: NextRequest, pathname: string, localeResponse: NextResponse) {
+  const response = NextResponse.redirect(new URL(pathname, request.url));
+  const localeCookie = localeResponse.cookies.get("NEXT_LOCALE");
+
+  if (localeCookie) {
+    response.cookies.set(localeCookie);
+  }
+
+  return response;
+}
+
+export function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const isAuthenticated = hasAuthCookies(request.cookies);
+  const localeResponse = withLocale(request);
+
+  if (pathname.startsWith("/api/")) {
+    return localeResponse;
+  }
+
+  if (!appConfig.authGuardsEnabled) {
+    return localeResponse;
+  }
+
+  if (pathname === "/signin" || pathname === "/signup") {
+    if (isAuthenticated) {
+      return redirectWithLocale(request, "/app", localeResponse);
+    }
+
+    return localeResponse;
+  }
+
+  if (pathname === "/app" || pathname.startsWith("/app/")) {
+    if (!isAuthenticated) {
+      return redirectWithLocale(request, "/signin", localeResponse);
+    }
+  }
+
+  return localeResponse;
 }
 
 export const config = {

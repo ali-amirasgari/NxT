@@ -12,6 +12,8 @@ type ThemeContextValue = {
 }
 
 const ThemeContext = React.createContext<ThemeContextValue | null>(null)
+const THEME_STORAGE_KEY = "theme"
+const THEME_CHANGE_EVENT = "nxt-theme-change"
 
 function isTheme(value: string | null): value is Theme {
   return value === "light" || value === "dark" || value === "system"
@@ -39,13 +41,45 @@ function applyResolvedTheme(resolvedTheme: ResolvedTheme) {
   root.style.colorScheme = resolvedTheme
 }
 
+function subscribeToTheme(onStoreChange: () => void) {
+  const handleStorage = (event: StorageEvent) => {
+    if (event.key === THEME_STORAGE_KEY) onStoreChange()
+  }
+
+  window.addEventListener("storage", handleStorage)
+  window.addEventListener(THEME_CHANGE_EVENT, onStoreChange)
+
+  return () => {
+    window.removeEventListener("storage", handleStorage)
+    window.removeEventListener(THEME_CHANGE_EVENT, onStoreChange)
+  }
+}
+
+function getThemeSnapshot(): Theme {
+  const stored = window.localStorage.getItem(THEME_STORAGE_KEY)
+  return isTheme(stored) ? stored : "system"
+}
+
+function getThemeServerSnapshot(): Theme {
+  return "system"
+}
+
+export function setAppTheme(nextTheme: Theme) {
+  window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme)
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+  const resolvedTheme =
+    nextTheme === "system" ? (prefersDark ? "dark" : "light") : nextTheme
+  applyResolvedTheme(resolvedTheme)
+  window.dispatchEvent(new Event(THEME_CHANGE_EVENT))
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const prefersDark = usePrefersDark()
-  const [theme, setThemeState] = React.useState<Theme>(() => {
-    if (typeof window === "undefined") return "system"
-    const stored = window.localStorage.getItem("theme")
-    return isTheme(stored) ? stored : "system"
-  })
+  const theme = React.useSyncExternalStore(
+    subscribeToTheme,
+    getThemeSnapshot,
+    getThemeServerSnapshot
+  )
 
   const resolvedTheme: ResolvedTheme =
     theme === "system" ? (prefersDark ? "dark" : "light") : theme
@@ -54,16 +88,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     applyResolvedTheme(resolvedTheme)
   }, [resolvedTheme])
 
-  React.useEffect(() => {
-    if (typeof window === "undefined") return
-    window.localStorage.setItem("theme", theme)
-  }, [theme])
-
   const value = React.useMemo<ThemeContextValue>(
     () => ({
       theme,
       resolvedTheme,
-      setTheme: (nextTheme) => setThemeState(nextTheme),
+      setTheme: setAppTheme,
     }),
     [theme, resolvedTheme]
   )
