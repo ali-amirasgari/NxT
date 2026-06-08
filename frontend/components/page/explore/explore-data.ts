@@ -124,7 +124,7 @@ export const exploreSearchResults: ExploreSearchResult[] = [
     title: "alex_levels_up",
     description: "Account · 1.2k points",
     iconText: "A",
-    href: "/app/profile?from=explore",
+    href: "/app/users/alex-carter?from=explore",
   },
   {
     id: "focus-sprint",

@@ -8,6 +8,7 @@ import {
   exploreTiles,
 } from "@/components/page/explore/explore-data";
 import { ExploreFilterChips } from "@/components/page/explore/explore-filter-chips";
+import { ExploreCreatorsRow } from "@/components/page/explore/explore-creators-row";
 import { ExploreMediaGrid } from "@/components/page/explore/explore-media-grid";
 import { ExploreSearchField } from "@/components/page/explore/explore-search-field";
 import { Typography } from "@/components/ui/typography";
@@ -60,6 +61,10 @@ export default function ExplorePage() {
           options={filters}
           onValueChange={setCategory}
         />
+      </div>
+
+      <div className="mt-5 px-1">
+        <ExploreCreatorsRow label={t("creators")} />
       </div>
 
       <div className="mt-4">

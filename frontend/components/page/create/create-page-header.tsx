@@ -6,19 +6,13 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
 
-type DetailPageHeaderProps = {
-  title: string;
-  backLabel: string;
-  moreLabel: string;
-  menu?: React.ReactNode;
-};
-
-export function DetailPageHeader({
+export function CreatePageHeader({
   title,
   backLabel,
-  moreLabel,
-  menu,
-}: DetailPageHeaderProps) {
+}: {
+  title: string;
+  backLabel: string;
+}) {
   const router = useRouter();
 
   return (
@@ -38,31 +32,9 @@ export function DetailPageHeader({
           aria-hidden="true"
         />
       </Button>
-
-      <Typography
-        as="h1"
-        variant="h4"
-        className="flex-1 text-xl font-bold tracking-[-0.02em]"
-      >
+      <Typography as="h1" variant="h4" className="text-xl font-bold">
         {title}
       </Typography>
-
-      {menu ?? (
-        <Button
-          type="button"
-          variant="ghost"
-          tone="neutral"
-          size="icon"
-          className="size-9 rounded-full"
-          aria-label={moreLabel}
-        >
-          <Icon
-            icon="solar:menu-dots-bold"
-            className="size-5"
-            aria-hidden="true"
-          />
-        </Button>
-      )}
     </header>
   );
 }

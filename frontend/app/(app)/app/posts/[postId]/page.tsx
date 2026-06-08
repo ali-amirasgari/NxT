@@ -1,18 +1,20 @@
 "use client";
 
 import { Icon } from "@iconify/react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { DetailActions } from "@/components/global/detail-actions";
 import { DetailAuthorRow } from "@/components/global/detail-author-row";
+import { ContentOptionsMenu } from "@/components/global/content-options-menu";
 import { DetailPageHeader } from "@/components/global/detail-page-header";
-import { getPostById, posts } from "@/components/global/app-data";
+import { getUserIdByName } from "@/components/global/users-data";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Typography } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
+import { useContent } from "@/hooks/use-content";
 
 const mediaToneClasses = {
   primary: "bg-primary text-primary-foreground",
@@ -23,9 +25,13 @@ const mediaToneClasses = {
 export default function PostDetailPage() {
   const t = useTranslations("app.details");
   const params = useParams<{ postId: string }>();
-  const post = getPostById(params.postId) ?? posts[0];
+  const searchParams = useSearchParams();
+  const { posts } = useContent();
+  const post = posts.find((item) => item.id === params.postId);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+
+  if (!post) return null;
 
   return (
     <section className="mx-auto w-full max-w-[390px] px-1 md:max-w-3xl">
@@ -33,6 +39,14 @@ export default function PostDetailPage() {
         title={t("postTitle")}
         backLabel={t("back")}
         moreLabel={t("more")}
+        menu={
+          <ContentOptionsMenu
+            type="post"
+            id={post.id}
+            owner={searchParams.get("from") !== "explore"}
+            onShare={() => setShareOpen(true)}
+          />
+        }
       />
 
       <div className="space-y-4 pt-1">
@@ -40,6 +54,11 @@ export default function PostDetailPage() {
           initial={post.authorInitial}
           name={post.author}
           meta={post.meta}
+          href={
+            searchParams.get("from") === "explore"
+              ? `/app/users/${getUserIdByName(post.author)}?from=explore`
+              : undefined
+          }
         />
 
         <Card

@@ -52,11 +52,18 @@ const navigationItems = [
     showOnMobile: false,
   },
   {
+    href: "/app/chats",
+    labelKey: "chats",
+    desktopIcon: "solar:chat-round-line-linear",
+    mobileIcon: "solar:chat-round-line-linear",
+    showOnMobile: true,
+  },
+  {
     href: "/app/leaderboard",
     labelKey: "leaderboard",
     desktopIcon: "solar:cup-star-linear",
-    mobileIcon: "solar:chat-round-line-linear",
-    showOnMobile: true,
+    mobileIcon: "solar:cup-star-linear",
+    showOnMobile: false,
   },
   {
     href: "/app/profile",
@@ -205,7 +212,7 @@ export function AppShell({ dir, children }: AppShellProps) {
                     size="icon"
                     className="size-10 -translate-y-2 rounded-full text-primary-foreground shadow-[0_8px_20px_rgba(255,122,26,0.3)] hover:-translate-y-2.5"
                   >
-                    <Link href="/app/goals" aria-label={t("createGoal")}>
+                    <Link href="/app/goals/create" aria-label={t("createGoal")}>
                       <Icon
                         icon="solar:add-circle-bold"
                         className="size-6"

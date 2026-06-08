@@ -1,27 +1,34 @@
 "use client";
 
 import { Icon } from "@iconify/react";
-import { useParams } from "next/navigation";
+import Link from "next/link";
+import { useParams, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { DetailActions } from "@/components/global/detail-actions";
 import { DetailAuthorRow } from "@/components/global/detail-author-row";
+import { ContentOptionsMenu } from "@/components/global/content-options-menu";
 import { DetailPageHeader } from "@/components/global/detail-page-header";
-import { getGoalById, goals } from "@/components/global/app-data";
+import { getUserIdByName } from "@/components/global/users-data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Typography } from "@/components/ui/typography";
+import { useContent } from "@/hooks/use-content";
 
 export default function GoalDetailPage() {
   const t = useTranslations("app.details");
   const params = useParams<{ goalId: string }>();
-  const goal = getGoalById(params.goalId) ?? goals[0];
+  const searchParams = useSearchParams();
+  const { goals } = useContent();
+  const goal = goals.find((item) => item.id === params.goalId);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+
+  if (!goal) return null;
 
   return (
     <section className="mx-auto w-full max-w-[390px] px-1 md:max-w-3xl">
@@ -29,6 +36,15 @@ export default function GoalDetailPage() {
         title={t("goalTitle")}
         backLabel={t("back")}
         moreLabel={t("more")}
+        menu={
+          <ContentOptionsMenu
+            type="goal"
+            id={goal.id}
+            goal={goal}
+            owner={searchParams.get("from") !== "explore"}
+            onShare={() => setShareOpen(true)}
+          />
+        }
       />
 
       <div className="space-y-5 pt-1">
@@ -37,6 +53,11 @@ export default function GoalDetailPage() {
           name={goal.author}
           meta={goal.meta}
           badge={goal.category}
+          href={
+            searchParams.get("from") === "explore"
+              ? `/app/users/${getUserIdByName(goal.author)}?from=explore`
+              : undefined
+          }
         />
 
         <Card className="gap-0 rounded-3xl border-border bg-card py-0 shadow-none ring-0">
@@ -145,13 +166,15 @@ export default function GoalDetailPage() {
           </Button>
         </div>
 
-        <Button size="lg" className="h-12 w-full rounded-xl">
-          <Icon
-            icon="solar:upload-linear"
-            className="size-5"
-            aria-hidden="true"
-          />
-          {t("submitProof")}
+        <Button asChild size="lg" className="h-12 w-full rounded-xl">
+          <Link href={`/app/posts/create?goalId=${goal.id}`}>
+            <Icon
+              icon="solar:upload-linear"
+              className="size-5"
+              aria-hidden="true"
+            />
+            {t("submitProof")}
+          </Link>
         </Button>
       </div>
     </section>

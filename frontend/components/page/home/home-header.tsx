@@ -2,6 +2,7 @@
 
 import { Icon } from "@iconify/react";
 import Image from "next/image";
+import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
@@ -23,19 +24,21 @@ export function HomeHeader({ title, notificationsLabel }: HomeHeaderProps) {
 
       <div className="flex items-center gap-2.5">
         <Button
-          type="button"
+          asChild
           variant="outline"
           tone="neutral"
           size="icon"
           className="relative size-10 -translate-y-1 rounded-full border-border bg-card shadow-none hover:bg-accent"
           aria-label={notificationsLabel}
         >
-          <Icon
-            icon="solar:bell-linear"
-            className="size-5"
-            aria-hidden="true"
-          />
-          <span className="absolute end-1.5 top-1.5 size-2 rounded-full bg-primary ring-2 ring-card" />
+          <Link href="/app/notifications">
+            <Icon
+              icon="solar:bell-linear"
+              className="size-5"
+              aria-hidden="true"
+            />
+            <span className="absolute end-1.5 top-1.5 size-2 rounded-full bg-primary ring-2 ring-card" />
+          </Link>
         </Button>
 
         <div

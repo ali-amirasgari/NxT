@@ -2,12 +2,13 @@
 
 import { useTranslations } from "next-intl";
 
-import { goals } from "@/components/global/app-data";
 import { GoalCard } from "@/components/global/goal-card";
 import { Typography } from "@/components/ui/typography";
+import { useContent } from "@/hooks/use-content";
 
 export default function GoalsPage() {
   const t = useTranslations("app.goals");
+  const { goals } = useContent();
 
   return (
     <section className="mx-auto w-full max-w-[390px] px-1 md:max-w-5xl md:px-0">
