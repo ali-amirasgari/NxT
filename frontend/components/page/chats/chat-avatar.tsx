@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 
 import type { ChatRecord } from "./chat-data";
@@ -19,6 +19,7 @@ export function ChatAvatar({
 }) {
   return (
     <Avatar className={cn("size-[46px] after:border-0", className)}>
+      {chat.imageDataUrl ? <AvatarImage src={chat.imageDataUrl} alt="" /> : null}
       <AvatarFallback
         className={cn(
           "text-[13px] font-bold text-white",

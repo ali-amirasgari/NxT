@@ -2,10 +2,12 @@
 
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 
 import { ChatAvatar } from "@/components/page/chats/chat-avatar";
 import { chats } from "@/components/page/chats/chat-data";
+import { CreateGroupForm } from "@/components/page/chats/create-group-form";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,21 +22,18 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@/components/ui/input-group";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { Typography } from "@/components/ui/typography";
 
-type StartChatDialogProps = {
-  labels: {
-    trigger: string;
-    title: string;
-    description: string;
-    select: string;
-    search: string;
-    noResults: string;
-  };
-};
-
-export function StartChatDialog({ labels }: StartChatDialogProps) {
+export function StartChatDialog() {
+  const t = useTranslations("app.chats");
   const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const filteredUsers = useMemo(() => {
     const normalized = query.trim().toLowerCase().replace(/^@/, "");
@@ -50,85 +49,84 @@ export function StartChatDialog({ labels }: StartChatDialogProps) {
   }, [query]);
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
           type="button"
           size="icon"
-          aria-label={labels.trigger}
+          aria-label={t("start")}
           className="absolute end-1 bottom-5 size-12 rounded-full text-white shadow-[0_10px_28px_rgba(255,100,20,0.35)] md:end-0"
         >
           <Icon icon="solar:pen-new-square-linear" className="size-5" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-[350px] gap-4 rounded-3xl p-5">
+      <DialogContent className="max-h-[90dvh] max-w-[390px] gap-4 overflow-hidden rounded-3xl p-5">
         <DialogHeader className="pe-9">
           <DialogTitle className="text-xl font-bold">
-            {labels.title}
+            {t("startTitle")}
           </DialogTitle>
-          <DialogDescription>{labels.description}</DialogDescription>
+          <DialogDescription>{t("startDescription")}</DialogDescription>
         </DialogHeader>
 
-        <div className="min-w-0 space-y-3">
-          <InputGroup className="h-11 rounded-[14px] border-input bg-card shadow-none">
-            <InputGroupAddon className="ps-3">
-              <Icon
-                icon="solar:magnifer-linear"
-                className="size-4"
-                aria-hidden="true"
-              />
-            </InputGroupAddon>
-            <InputGroupInput
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={labels.search}
-              aria-label={labels.search}
-              className="text-sm"
-            />
-          </InputGroup>
+        <Tabs defaultValue="direct" className="min-w-0">
+          <TabsList className="grid h-10 w-full grid-cols-2">
+            <TabsTrigger value="direct">{t("select")}</TabsTrigger>
+            <TabsTrigger value="group">{t("createGroup")}</TabsTrigger>
+          </TabsList>
 
-          <div className="space-y-2">
-            {filteredUsers.map((chat) => (
-              <Button
-                key={chat.id}
-                type="button"
-                variant="ghost"
-                tone="neutral"
-                className="flex h-auto w-full min-w-0 justify-start gap-3 rounded-2xl px-2 py-2.5 text-start"
-                onClick={() => router.push(`/app/chats/${chat.id}`)}
-              >
-                <ChatAvatar chat={chat} className="size-10" />
-                <span className="min-w-0 flex-1">
-                  <Typography
-                    as="span"
-                    className="block truncate text-sm font-semibold"
-                  >
-                    {chat.name}
-                  </Typography>
-                  <Typography
-                    as="span"
-                    variant="muted"
-                    className="block truncate text-xs"
-                  >
-                    @{chat.id} · {chat.status}
-                  </Typography>
-                </span>
-                <span className="shrink-0 text-xs font-semibold text-primary">
-                  {labels.select}
-                </span>
-              </Button>
-            ))}
-            {filteredUsers.length === 0 ? (
-              <Typography
-                as="p"
-                variant="muted"
-                className="py-8 text-center text-sm"
-              >
-                {labels.noResults}
-              </Typography>
-            ) : null}
-          </div>
-        </div>
+          <TabsContent value="direct" className="mt-3 space-y-3">
+            <InputGroup className="h-11 rounded-[14px] border-input bg-card shadow-none">
+              <InputGroupAddon className="ps-3">
+                <Icon icon="solar:magnifer-linear" className="size-4" />
+              </InputGroupAddon>
+              <InputGroupInput
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t("searchUsers")}
+                aria-label={t("searchUsers")}
+                className="text-sm"
+              />
+            </InputGroup>
+
+            <div className="space-y-2">
+              {filteredUsers.map((chat) => (
+                <Button
+                  key={chat.id}
+                  type="button"
+                  variant="ghost"
+                  tone="neutral"
+                  className="flex h-auto w-full min-w-0 justify-start gap-3 rounded-2xl px-2 py-2.5 text-start"
+                  onClick={() => {
+                    setOpen(false);
+                    router.push(`/app/chats/${chat.id}`);
+                  }}
+                >
+                  <ChatAvatar chat={chat} className="size-10" />
+                  <span className="min-w-0 flex-1">
+                    <Typography as="span" className="block truncate text-sm font-semibold">
+                      {chat.name}
+                    </Typography>
+                    <Typography as="span" variant="muted" className="block truncate text-xs">
+                      @{chat.id} · {chat.status}
+                    </Typography>
+                  </span>
+                  <span className="shrink-0 text-xs font-semibold text-primary">
+                    {t("select")}
+                  </span>
+                </Button>
+              ))}
+              {filteredUsers.length === 0 ? (
+                <Typography as="p" variant="muted" className="py-8 text-center text-sm">
+                  {t("noUsers")}
+                </Typography>
+              ) : null}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="group" className="mt-4">
+            <CreateGroupForm onCreated={() => setOpen(false)} />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

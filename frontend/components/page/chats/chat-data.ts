@@ -7,6 +7,7 @@ export type ChatRecord = {
   unread: boolean;
   tone: "green" | "orange" | "blue" | "violet";
   status: string;
+  imageDataUrl?: string;
 };
 
 export type ChatMessage = {

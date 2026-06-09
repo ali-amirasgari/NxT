@@ -18,12 +18,9 @@ export default function AppHomePage() {
 
   return (
     <section className="mx-auto w-full max-w-[390px] px-1 md:max-w-5xl md:px-0">
-      <HomeHeader
-        title={t("headerTitle")}
-        notificationsLabel={t("notifications")}
-      />
+      <HomeHeader notificationsLabel={t("notifications")} />
 
-      <div className="mt-[14px]">
+      <div className="mt-5 md:mt-[14px]">
         <Typography
           as="h2"
           className="border-0 pb-0 text-[1.375rem] font-extrabold tracking-[-0.025em] text-foreground"

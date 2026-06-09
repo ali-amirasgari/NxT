@@ -5,23 +5,14 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Typography } from "@/components/ui/typography";
 
 type HomeHeaderProps = {
-  title: string;
   notificationsLabel: string;
 };
 
-export function HomeHeader({ title, notificationsLabel }: HomeHeaderProps) {
+export function HomeHeader({ notificationsLabel }: HomeHeaderProps) {
   return (
-    <header className="flex items-start justify-between gap-4 pt-5 md:items-center md:pt-1">
-      <Typography
-        as="h1"
-        className="text-[1.75rem] font-extrabold tracking-[-0.03em] text-foreground"
-      >
-        {title}
-      </Typography>
-
+    <header className="flex justify-end pt-5 md:pt-1">
       <div className="flex items-center gap-2.5">
         <Button
           asChild

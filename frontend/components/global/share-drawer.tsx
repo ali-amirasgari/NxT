@@ -72,7 +72,13 @@ export function ShareDrawer({
   }
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
+    <Drawer
+      open={open}
+      onOpenChange={onOpenChange}
+      shouldScaleBackground={false}
+      setBackgroundColorOnScale={false}
+      noBodyStyles
+    >
       <DrawerContent className="!bottom-[70px] !left-1/2 !right-auto mx-0 h-[388px] w-[calc(100%-40px)] max-w-[350px] -translate-x-1/2 rounded-3xl border border-primary/40 bg-card shadow-[0_-8px_24px_rgba(0,0,0,0.35)] [&>div:first-child]:hidden">
         <DrawerHeader className="px-5 pb-2 pt-5 text-start">
           <DrawerTitle className="text-xl font-bold">
