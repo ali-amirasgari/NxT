@@ -83,11 +83,14 @@ Services:
 
 - Frontend: http://localhost:3000
 - Backend: http://localhost:8000
+- Chat service: http://localhost:8002
+- Chat service health: http://localhost:8002/health
 - AI service: http://localhost:8001
 - AI service health: http://localhost:8001/health
 
 ## Service URLs inside Docker
 
 - Backend can call AI service with `http://ai-service:8000`
-- Frontend browser calls backend with `NEXT_PUBLIC_API_URL`
+- Frontend server-side routes call backend with `http://backend:8000`
+- Frontend browser connects to chat with `http://localhost:8002`
 - Frontend browser calls AI service with `NEXT_PUBLIC_AI_SERVICE_URL`
