@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import {
   Geist_Mono,
+  Inter,
   Noto_Sans_Arabic,
   Plus_Jakarta_Sans,
 } from "next/font/google";
@@ -8,15 +9,21 @@ import { NextIntlClientProvider } from "next-intl";
 import { headers } from "next/headers";
 import "./globals.css";
 import { cn } from "@/lib/utils";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import { defaultLocale, isLocale, rtlLocales } from "@/i18n/config";
 import { getDictionary } from "@/i18n/get-dictionary";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
   variable: "--font-sans",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
 });
 
 const geistMono = Geist_Mono({
@@ -53,6 +60,7 @@ export default async function RootLayout({
       className={cn(
         "h-full antialiased",
         plusJakartaSans.variable,
+        inter.variable,
         geistMono.variable,
         notoArabic.variable
       )}
@@ -69,7 +77,10 @@ export default async function RootLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <QueryProvider>
             <ThemeProvider>
-              <TooltipProvider>{children}</TooltipProvider>
+              <TooltipProvider>
+                {children}
+                <Toaster />
+              </TooltipProvider>
             </ThemeProvider>
           </QueryProvider>
         </NextIntlClientProvider>
