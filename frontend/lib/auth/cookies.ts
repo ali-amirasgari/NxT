@@ -3,8 +3,8 @@ import type { NextResponse } from "next/server";
 export const ACCESS_TOKEN_COOKIE = "access_token";
 export const REFRESH_TOKEN_COOKIE = "refresh_token";
 
-const ONE_DAY_IN_SECONDS = 60 * 60 * 24;
-const THIRTY_DAYS_IN_SECONDS = ONE_DAY_IN_SECONDS * 30;
+const ACCESS_TOKEN_MAX_AGE = 60 * 15;
+const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 7;
 
 function isProduction() {
   return process.env.NODE_ENV === "production";
@@ -26,7 +26,7 @@ export function setAuthCookies(
       sameSite: "lax",
       secure: isProduction(),
       path: "/",
-      maxAge: ONE_DAY_IN_SECONDS,
+      maxAge: ACCESS_TOKEN_MAX_AGE,
     });
   }
 
@@ -36,7 +36,7 @@ export function setAuthCookies(
       sameSite: "lax",
       secure: isProduction(),
       path: "/",
-      maxAge: THIRTY_DAYS_IN_SECONDS,
+      maxAge: REFRESH_TOKEN_MAX_AGE,
     });
   }
 }

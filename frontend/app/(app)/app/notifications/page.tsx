@@ -19,18 +19,8 @@ export default function NotificationsPage() {
         labels={{
           recent: t("recent"),
           markAll: t("markAll"),
-          proofTitle: t("proofTitle"),
-          proofDescription: t("proofDescription"),
-          proofTime: t("proofTime"),
-          followTitle: t("followTitle"),
-          followDescription: t("followDescription"),
-          followTime: t("followTime"),
-          commentTitle: t("commentTitle"),
-          commentDescription: t("commentDescription"),
-          commentTime: t("commentTime"),
-          betTitle: t("betTitle"),
-          betDescription: t("betDescription"),
-          betTime: t("betTime"),
+          loading: t("loading"),
+          empty: t("empty"),
         }}
       />
     </section>

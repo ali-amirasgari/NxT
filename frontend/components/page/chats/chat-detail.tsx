@@ -1,35 +1,26 @@
 "use client";
 
 import { Icon } from "@iconify/react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { QUERY_KEYS } from "@/apis/QUERY_KEYS";
+import { useConversationDetailQuery } from "@/apis/queries/chat/queries";
 import chatSocketService from "@/apis/services/chatSocketService";
 import type {
+  ChatSocketError,
   ChatSocketMessage,
+  ChatSocketUser,
   DeleteMessagePayload,
 } from "@/apis/types/chat";
 import type { ChatRecord } from "@/components/page/chats/chat-data";
 import { ChatAvatar } from "@/components/page/chats/chat-avatar";
 import { ChatComposer } from "@/components/page/chats/chat-composer";
-import { getChatById } from "@/components/page/chats/chat-data";
 import { MessageBubble } from "@/components/page/chats/message-bubble";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
-import {
-  getGroupChatsServerSnapshot,
-  getGroupChatsSnapshot,
-  parseGroupChats,
-  subscribeToGroupChats,
-} from "@/lib/group-chat-storage";
-import {
-  getProfileServerSnapshot,
-  getProfileSnapshot,
-  parseProfile,
-  subscribeToProfile,
-} from "@/lib/profile-storage";
-
 function replaceMessage(
   messages: ChatSocketMessage[],
   updatedMessage: ChatSocketMessage,
@@ -42,50 +33,65 @@ function replaceMessage(
 export function ChatDetail({ chatId }: { chatId: string }) {
   const t = useTranslations("app.chats");
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [messages, setMessages] = useState<ChatSocketMessage[]>([]);
-  const groupChatsSnapshot = useSyncExternalStore(
-    subscribeToGroupChats,
-    getGroupChatsSnapshot,
-    getGroupChatsServerSnapshot,
-  );
-  const group = useMemo(
-    () => parseGroupChats(groupChatsSnapshot).find((item) => item.id === chatId),
-    [chatId, groupChatsSnapshot],
-  );
+  const [socketUser, setSocketUser] = useState<ChatSocketUser>();
+  const [socketError, setSocketError] = useState("");
+  const conversationQuery = useConversationDetailQuery(chatId);
   const chat = useMemo<ChatRecord>(() => {
-    if (group) {
-      const adminCount = group.members.filter(
-        (member) => member.role === "admin",
-      ).length;
+    const conversation = conversationQuery.data;
+    const name = conversation?.name ?? t("loadingChats");
+    const adminCount =
+      conversation?.members.filter(
+        (member) => member.role === "admin" || member.role === "owner",
+      ).length ?? 0;
 
-      return {
-        id: group.id,
-        name: group.name,
-        initial: group.name.charAt(0).toUpperCase(),
-        preview: t("groupReady"),
-        time: "",
-        unread: false,
-        tone: "blue",
-        status: `${t("memberCount", { count: group.members.length })} · ${t("adminCount", { count: adminCount })}`,
-        imageDataUrl: group.imageDataUrl,
-      };
-    }
-
-    return getChatById(chatId) ?? getChatById("nima-goals")!;
-  }, [chatId, group, t]);
-  const profileSnapshot = useSyncExternalStore(
-    subscribeToProfile,
-    getProfileSnapshot,
-    getProfileServerSnapshot,
-  );
-  const profile = useMemo(() => parseProfile(profileSnapshot), [profileSnapshot]);
-  const currentUser = profile.username.replace(/^@/, "");
-
+    return {
+      id: chatId,
+      name,
+      initial: name.charAt(0).toUpperCase(),
+      preview: conversation?.lastMessage?.message ?? "",
+      time: "",
+      unread: false,
+      tone: conversation?.type === "group" ? "blue" : "violet",
+      status:
+        conversation?.type === "group"
+          ? `${t("memberCount", { count: conversation.memberCount })} · ${t("adminCount", { count: adminCount })}`
+          : conversation?.members.find(
+              (member) => member.userId !== socketUser?.id,
+            )?.email ?? "",
+      imageDataUrl: conversation?.imageUrl,
+    };
+  }, [chatId, conversationQuery.data, socketUser?.id, t]);
   useEffect(() => {
-    const socket = chatSocketService.connect();
+    const socket = chatSocketService.getSocket();
+    const handleAuthenticated = (user: ChatSocketUser) => {
+      setSocketUser(user);
+      setSocketError("");
+    };
+    const handleSocketError = (error: ChatSocketError) => {
+      setSocketError(error.message);
+    };
+    const handleConnectionError = (
+      error: Error & { data?: { code?: string } },
+    ) => {
+      const isUnauthorized =
+        error.data?.code === "UNAUTHORIZED" ||
+        error.message === "Unauthorized" ||
+        error.message === "Authentication required" ||
+        error.message === "Authentication failed";
 
+      if (isUnauthorized) {
+        return;
+      }
+
+      setSocketError(error.message);
+    };
     const handleHistory = (history: ChatSocketMessage[]) => {
       setMessages(history);
+      void queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.chat.conversations.all,
+      });
     };
     const handleNewMessage = (message: ChatSocketMessage) => {
       if (message.room !== chatId) return;
@@ -109,7 +115,18 @@ export function ChatDetail({ chatId }: { chatId: string }) {
       );
     };
     const joinRoom = () => chatSocketService.joinRoom(chatId);
+    const handleConversationUpdated = () => {
+      void queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.chat.conversations.all,
+      });
+      void queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.chat.conversations.detail(chatId),
+      });
+    };
 
+    socket.on("authenticated", handleAuthenticated);
+    socket.on("socket_error", handleSocketError);
+    socket.on("connect_error", handleConnectionError);
     socket.on("connect", joinRoom);
     socket.on("room_history", handleHistory);
     socket.on("newMessage", handleNewMessage);
@@ -117,12 +134,18 @@ export function ChatDetail({ chatId }: { chatId: string }) {
     socket.on("message_deleted", handleDeletedMessage);
     socket.on("message_reaction_updated", handleUpdatedMessage);
     socket.on("message_pinned", handleUpdatedMessage);
+    socket.on("conversation:updated", handleConversationUpdated);
 
     if (socket.connected) {
       joinRoom();
+    } else {
+      socket.connect();
     }
 
     return () => {
+      socket.off("authenticated", handleAuthenticated);
+      socket.off("socket_error", handleSocketError);
+      socket.off("connect_error", handleConnectionError);
       socket.off("connect", joinRoom);
       socket.off("room_history", handleHistory);
       socket.off("newMessage", handleNewMessage);
@@ -130,9 +153,10 @@ export function ChatDetail({ chatId }: { chatId: string }) {
       socket.off("message_deleted", handleDeletedMessage);
       socket.off("message_reaction_updated", handleUpdatedMessage);
       socket.off("message_pinned", handleUpdatedMessage);
+      socket.off("conversation:updated", handleConversationUpdated);
       chatSocketService.disconnect();
     };
-  }, [chatId]);
+  }, [chatId, queryClient, router]);
 
   return (
     <section className="mx-auto flex min-h-[calc(100dvh-108px)] w-full max-w-[390px] flex-col px-1 md:max-w-3xl">
@@ -182,16 +206,20 @@ export function ChatDetail({ chatId }: { chatId: string }) {
             key={message._id}
             text={message.message}
             imageUrl={message.imageUrl}
-            mine={message.user === currentUser}
+            mine={
+              message.userId
+                ? message.userId === socketUser?.id
+                : message.user === socketUser?.username
+            }
+            downloadLabel={t("downloadAttachment")}
             reactions={message.reactions}
-            currentUser={currentUser}
+            currentUser={socketUser?.id ?? ""}
             reactionLabel={t("addReaction")}
             onReact={(emoji) =>
               chatSocketService.addReaction({
                 room: chatId,
                 messageId: message._id,
                 emoji,
-                user: currentUser,
               })
             }
             time={new Date(message.timestamp).toLocaleTimeString([], {
@@ -202,15 +230,30 @@ export function ChatDetail({ chatId }: { chatId: string }) {
         ))}
       </div>
 
+      {socketError ? (
+        <Typography as="p" className="mb-2 text-center text-xs text-destructive">
+          {socketError}
+        </Typography>
+      ) : null}
+
       <ChatComposer
         placeholder={t("writeMessage")}
         sendLabel={t("send")}
         attachLabel={t("attach")}
+        removeAttachmentLabel={t("removeAttachment")}
+        invalidAttachmentLabel={t("invalidAttachment")}
+        attachmentTooLargeLabel={t("attachmentTooLarge")}
         onSend={(message) =>
           chatSocketService.sendMessage({
             room: chatId,
-            user: currentUser,
             message,
+          })
+        }
+        onSendAttachment={(attachment) =>
+          chatSocketService.uploadImage({
+            room: chatId,
+            imageUrl: attachment.dataUrl,
+            message: attachment.name,
           })
         }
       />

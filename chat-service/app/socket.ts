@@ -1,4 +1,5 @@
 import { Server, Socket } from 'socket.io';
+import { AuthenticatedSocketData } from './auth/types';
 import {
     handleAddReaction,
     handleDeleteMessage,
@@ -8,10 +9,16 @@ import {
     handleSendMessage,
     handleUploadImage,
 } from './socketHandlers'
+import { getUserRoom } from './socketHandlers/utils';
 
-export const registerSocketHandlers = (io: Server) => {
-    io.on('connection', (socket: Socket) => {
+type AuthenticatedSocketServer = Server<any, any, any, AuthenticatedSocketData>;
+type AuthenticatedSocket = Socket<any, any, any, AuthenticatedSocketData>;
+
+export const registerSocketHandlers = (io: AuthenticatedSocketServer) => {
+    io.on('connection', (socket: AuthenticatedSocket) => {
         console.log('🔌 New client connected:', socket.id);
+        socket.emit('authenticated', socket.data.user);
+        socket.join(getUserRoom(socket.data.user.id));
 
         socket.on('join_room', async (room: string) => {
             await handleJoinRoom(socket, room);

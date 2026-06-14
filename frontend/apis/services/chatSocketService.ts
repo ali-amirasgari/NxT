@@ -12,23 +12,68 @@ import type {
 
 class ChatSocketService {
   private socket: ChatSocket | null = null;
+  private refreshRequest: Promise<void> | null = null;
 
-  connect() {
+  private async refreshSession() {
+    if (!this.refreshRequest) {
+      this.refreshRequest = fetch("/api/auth/refresh", {
+        method: "POST",
+        credentials: "include",
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Unable to refresh session.");
+          }
+        })
+        .finally(() => {
+          this.refreshRequest = null;
+        });
+    }
+
+    return this.refreshRequest;
+  }
+
+  getSocket() {
     if (!this.socket) {
       this.socket = io(
         process.env.NEXT_PUBLIC_CHAT_SOCKET_URL ?? "http://localhost:3000",
         {
           autoConnect: false,
+          withCredentials: true,
           transports: ["websocket", "polling"],
         },
       );
-    }
+      this.socket.on("connect_error", async (error) => {
+        const code = (error as Error & { data?: { code?: string } }).data?.code;
+        const unauthorized =
+          code === "UNAUTHORIZED" ||
+          error.message === "Authentication required" ||
+          error.message === "Authentication failed";
 
-    if (!this.socket.connected) {
-      this.socket.connect();
+        if (!unauthorized) return;
+
+        try {
+          await this.refreshSession();
+          this.socket?.connect();
+        } catch {
+          if (typeof window !== "undefined") {
+            window.location.assign("/signin");
+          }
+        }
+      });
     }
 
     return this.socket;
+  }
+
+  connect() {
+    const socket = this.getSocket();
+
+    if (!socket.connected) {
+      socket.connect();
+    }
+
+    return socket;
   }
 
   disconnect() {

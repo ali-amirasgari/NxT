@@ -13,7 +13,8 @@ export function useRegisterMutation() {
     mutationKey: QUERY_KEYS.auth.register,
     mutationFn: registerUser,
     onSuccess: (response) => {
-      router.push(response.authenticated ? "/app" : "/signin");
+      router.replace(response.authenticated ? "/app" : "/signin");
+      router.refresh();
     },
   });
 }
@@ -25,7 +26,8 @@ export function useLoginMutation() {
     mutationKey: QUERY_KEYS.auth.login,
     mutationFn: loginUser,
     onSuccess: () => {
-      router.push("/app");
+      router.replace("/app");
+      router.refresh();
     },
   });
 }

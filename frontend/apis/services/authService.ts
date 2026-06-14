@@ -1,53 +1,87 @@
+import axios from "axios";
+
 import { API_ROUTES } from "@/apis/API_ROUTES";
 import { BaseService } from "@/apis/services/baseService";
+import type {
+  AuthResponse,
+  LoginPayload,
+  RegisterPayload,
+} from "@/apis/types/auth";
 
-export interface RegisterPayload {
-  email: string;
-  password: string;
-  confirmPassword: string;
+function findFirstError(value: unknown): string | undefined {
+  if (typeof value === "string" && value.trim()) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(findFirstError).find(Boolean);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.values(value).map(findFirstError).find(Boolean);
+  }
+
+  return undefined;
 }
 
-export interface LoginPayload {
-  email: string;
-  password: string;
-}
+function getErrorMessage(error: unknown, fallback: string) {
+  if (!axios.isAxiosError<AuthResponse>(error)) {
+    return error instanceof Error ? error.message : fallback;
+  }
 
-export interface AuthResponse {
-  access_token?: string;
-  refresh_token?: string;
-  access?: string;
-  refresh?: string;
-  authenticated?: boolean;
-  success?: boolean;
-  error?: string;
-  details?: Record<string, unknown>;
+  const payload = error.response?.data;
+
+  return (
+    payload?.error ||
+    payload?.detail ||
+    payload?.non_field_errors?.[0] ||
+    findFirstError(payload?.details) ||
+    findFirstError(payload) ||
+    fallback
+  );
 }
 
 class AuthService extends BaseService {
   async register(payload: RegisterPayload): Promise<AuthResponse> {
-    const response = await this.getClient().post<AuthResponse>(
-      API_ROUTES.auth.register,
-      payload
-    );
+    try {
+      const response = await this.getClient().post<AuthResponse>(
+        API_ROUTES.auth.register,
+        payload,
+      );
 
-    return response.data;
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, "Unable to create account."));
+    }
   }
 
   async login(payload: LoginPayload): Promise<AuthResponse> {
-    const response = await this.getClient().post<AuthResponse>(
-      API_ROUTES.auth.login,
-      payload
-    );
+    try {
+      const response = await this.getClient().post<AuthResponse>(
+        API_ROUTES.auth.login,
+        payload,
+      );
 
-    if (!response.data.authenticated) {
-      throw new Error(response.data.error ?? "Authentication did not create a session.");
+      if (!response.data.authenticated) {
+        throw new Error(
+          response.data.error ?? "Authentication did not create a session.",
+        );
+      }
+
+      return response.data;
+    } catch (error) {
+      throw new Error(getErrorMessage(error, "Unable to sign in."));
     }
-
-    return response.data;
   }
 
   async logout(): Promise<AuthResponse> {
     const response = await this.getClient().post<AuthResponse>(API_ROUTES.auth.logout);
+
+    return response.data;
+  }
+
+  async refresh(): Promise<AuthResponse> {
+    const response = await this.getClient().post<AuthResponse>(API_ROUTES.auth.refresh);
 
     return response.data;
   }

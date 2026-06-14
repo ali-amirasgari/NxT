@@ -1,17 +1,10 @@
-import authService, { LoginPayload, RegisterPayload } from "@/apis/services/authService";
+import authService from "@/apis/services/authService";
+import type { LoginPayload, RegisterPayload } from "@/apis/types/auth";
 
 export async function registerUser(payload: RegisterPayload) {
-  try {
-    return await authService.register(payload);
-  } catch (error) {
-    throw error;
-  }
+  return authService.register(payload);
 }
 
 export async function loginUser(payload: LoginPayload) {
-  try {
-    return await authService.login(payload);
-  } catch (error) {
-    throw error;
-  }
+  return authService.login(payload);
 }

@@ -136,9 +136,20 @@ export async function handleAuthRoute(request: NextRequest, route: AuthRouteKey)
 
   const responseBody = await parseJsonSafely(upstreamResponse);
   const normalizedBody = normalizeAuthResponse(route, upstreamResponse.status, responseBody);
-  const response = NextResponse.json(normalizedBody, { status: upstreamResponse.status });
+  const responseStatus =
+    route === "logout" && upstreamResponse.status === 204
+      ? 200
+      : upstreamResponse.status;
+  const response = NextResponse.json(normalizedBody, { status: responseStatus });
 
-  if (!upstreamResponse.ok || route === "logout") {
+  if (!upstreamResponse.ok) {
+    if (route !== "session") {
+      clearAuthCookies(response);
+    }
+    return response;
+  }
+
+  if (route === "logout") {
     clearAuthCookies(response);
     return response;
   }

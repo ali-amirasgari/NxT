@@ -16,6 +16,25 @@ export const API_ROUTES = {
   users: {
     me: "/users/me",
   },
+  chat: {
+    conversations: {
+      list: "/conversations",
+      detail: (conversationId: string) => `/conversations/${conversationId}`,
+      direct: "/conversations/direct",
+      group: "/conversations/group",
+      members: (conversationId: string) =>
+        `/conversations/${conversationId}/members`,
+    },
+    users: {
+      search: "/users",
+    },
+    notifications: {
+      list: "/notifications",
+      unreadCount: "/notifications/unread-count",
+      markRead: (notificationId: string) => `/notifications/${notificationId}/read`,
+      markAllRead: "/notifications/read-all",
+    },
+  },
 } as const;
 
 export type ApiRoutes = typeof API_ROUTES;

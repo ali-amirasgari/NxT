@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from auth_app.views import MeView
+from auth_app.views import MeView, UserDetailView, UserListView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,4 +25,8 @@ urlpatterns = [
     path('auth/', include('auth_app.urls')),
     path('users/me', MeView.as_view(), name='users-me-no-slash'),
     path('users/me/', MeView.as_view(), name='users-me'),
+    path('users', UserListView.as_view(), name='users-list-no-slash'),
+    path('users/', UserListView.as_view(), name='users-list'),
+    path('users/<int:user_id>', UserDetailView.as_view(), name='users-detail-no-slash'),
+    path('users/<int:user_id>/', UserDetailView.as_view(), name='users-detail'),
 ]

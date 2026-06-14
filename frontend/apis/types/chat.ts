@@ -1,8 +1,11 @@
 import type { Socket } from "socket.io-client";
+import type { Conversation } from "@/apis/types/conversation";
+import type { ChatNotification } from "@/apis/types/notification";
 
 export type ChatSocketMessage = {
   _id: string;
   room: string;
+  userId?: string;
   user: string;
   message: string;
   imageUrl?: string;
@@ -18,7 +21,6 @@ export type ChatSocketMessage = {
 
 export type SendMessagePayload = {
   room: string;
-  user: string;
   message: string;
   imageUrl?: string;
   replyTo?: string;
@@ -39,7 +41,6 @@ export type DeleteMessagePayload = {
 
 export type AddReactionPayload = DeleteMessagePayload & {
   emoji: string;
-  user: string;
 };
 
 export type PinMessagePayload = DeleteMessagePayload & {
@@ -48,18 +49,44 @@ export type PinMessagePayload = DeleteMessagePayload & {
 
 export type UploadImagePayload = {
   room: string;
-  user: string;
   imageUrl: string;
   message?: string;
 };
 
+export type ChatAttachment = {
+  name: string;
+  dataUrl: string;
+  mimeType: string;
+};
+
+export type ChatSocketUser = {
+  id: string;
+  username: string;
+  email: string;
+  isStaff: boolean;
+};
+
+export type ChatSocketError = {
+  event: string;
+  code: string;
+  message: string;
+};
+
 export type ChatServerToClientEvents = {
+  authenticated: (user: ChatSocketUser) => void;
+  socket_error: (error: ChatSocketError) => void;
   room_history: (messages: ChatSocketMessage[]) => void;
   newMessage: (message: ChatSocketMessage) => void;
   message_edited: (message: ChatSocketMessage) => void;
   message_deleted: (payload: DeleteMessagePayload) => void;
   message_reaction_updated: (message: ChatSocketMessage) => void;
   message_pinned: (message: ChatSocketMessage) => void;
+  "conversation:updated": (conversation: Conversation) => void;
+  "notification:new": (notification: ChatNotification) => void;
+  "notification:unread_count": (payload: {
+    userId: string;
+    unreadCount: number;
+  }) => void;
 };
 
 export type ChatClientToServerEvents = {

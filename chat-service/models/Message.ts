@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IMessage extends Document {
     room: string;
+    userId: string;
     user: string;
     message: string;
     imageUrl?: string;
@@ -17,6 +18,7 @@ export interface IMessage extends Document {
 
 const MessageSchema: Schema = new Schema({
     room: { type: String, required: true },
+    userId: { type: String, required: true },
     user: { type: String, required: true },
     message: { type: String, required: true },
     imageUrl: { type: String, default: '' },

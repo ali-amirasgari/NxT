@@ -28,7 +28,7 @@ const appMode = getAppMode();
 export const config = {
   appMode,
   apiBaseUrl: getApiBaseUrl(appMode),
-  authGuardsEnabled: appMode !== "dev",
+  authGuardsEnabled: true,
 } as const;
 
 export default config;

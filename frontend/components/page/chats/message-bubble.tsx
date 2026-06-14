@@ -18,6 +18,7 @@ export function MessageBubble({
   imageUrl,
   mine,
   time,
+  downloadLabel,
   reactions,
   currentUser,
   reactionLabel,
@@ -27,6 +28,7 @@ export function MessageBubble({
   imageUrl?: string;
   mine: boolean;
   time?: string;
+  downloadLabel: string;
   reactions?: Record<string, string[]>;
   currentUser: string;
   reactionLabel: string;
@@ -35,6 +37,17 @@ export function MessageBubble({
   const visibleReactions = Object.entries(reactions ?? {}).filter(
     ([, users]) => users.length > 0,
   );
+  const attachmentMimeType = imageUrl?.startsWith("data:")
+    ? imageUrl.slice(5, imageUrl.indexOf(";"))
+    : undefined;
+  const isDocument =
+    attachmentMimeType === "application/pdf" ||
+    attachmentMimeType === "application/vnd.ms-excel" ||
+    attachmentMimeType ===
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  const isImage =
+    Boolean(imageUrl) &&
+    (!attachmentMimeType || attachmentMimeType.startsWith("image/"));
 
   return (
     <div className={cn("flex flex-col", mine ? "items-end" : "items-start")}>
@@ -52,7 +65,7 @@ export function MessageBubble({
               : "border border-input bg-card text-card-foreground",
           )}
         >
-          {imageUrl ? (
+          {imageUrl && isImage ? (
             // The chat service accepts arbitrary external attachment hosts.
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -61,7 +74,43 @@ export function MessageBubble({
               className="mb-2 max-h-64 w-full rounded-xl object-cover"
             />
           ) : null}
-          {text}
+          {imageUrl && isDocument ? (
+            <a
+              href={imageUrl}
+              download={text}
+              className={cn(
+                "flex min-w-52 items-center gap-3 rounded-xl p-2 no-underline",
+                mine ? "bg-primary-foreground/10" : "bg-muted",
+              )}
+            >
+              <span
+                className={cn(
+                  "flex size-10 shrink-0 items-center justify-center rounded-lg",
+                  mine
+                    ? "bg-primary-foreground/15 text-primary-foreground"
+                    : "bg-primary/10 text-primary",
+                )}
+              >
+                <Icon
+                  icon={
+                    attachmentMimeType === "application/pdf"
+                      ? "solar:file-text-bold"
+                      : "solar:document-bold"
+                  }
+                  className="size-5"
+                />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-medium">{text}</span>
+                <span className="block text-[10px] opacity-75">
+                  {downloadLabel}
+                </span>
+              </span>
+              <Icon icon="solar:download-linear" className="size-4 shrink-0" />
+            </a>
+          ) : (
+            text
+          )}
         </div>
 
         <Popover>

@@ -3,13 +3,16 @@
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 
+import {
+  useChatUsersSearchQuery,
+  useCreateGroupConversationMutation,
+} from "@/apis/queries/chat/queries";
 import type {
-  GroupChatMember,
-  GroupMemberRole,
-} from "@/apis/types/group-chat";
-import { publicUsers } from "@/components/global/users-data";
+  ChatUser,
+  ConversationMemberRole,
+} from "@/apis/types/conversation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -23,10 +26,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Typography } from "@/components/ui/typography";
-import { createGroupChat } from "@/lib/group-chat-storage";
-import { groupChatSchema } from "@/validations/group-chat-validation";
-
 const MAX_GROUP_IMAGE_SIZE = 2 * 1024 * 1024;
+type SelectedMember = ChatUser & {
+  role: Exclude<ConversationMemberRole, "owner">;
+};
 
 export function CreateGroupForm({ onCreated }: { onCreated?: () => void }) {
   const t = useTranslations("app.chats");
@@ -34,20 +37,11 @@ export function CreateGroupForm({ onCreated }: { onCreated?: () => void }) {
   const [name, setName] = useState("");
   const [imageDataUrl, setImageDataUrl] = useState<string>();
   const [query, setQuery] = useState("");
-  const [members, setMembers] = useState<GroupChatMember[]>([]);
+  const [members, setMembers] = useState<SelectedMember[]>([]);
   const [error, setError] = useState("");
-
-  const filteredUsers = useMemo(() => {
-    const normalized = query.trim().toLowerCase().replace(/^@/, "");
-
-    return normalized
-      ? publicUsers.filter(
-          (user) =>
-            user.name.toLowerCase().includes(normalized) ||
-            user.username.toLowerCase().includes(normalized),
-        )
-      : publicUsers;
-  }, [query]);
+  const usersQuery = useChatUsersSearchQuery({ query });
+  const createGroupMutation = useCreateGroupConversationMutation();
+  const users = usersQuery.data ?? [];
 
   function toggleMember(userId: string) {
     const selected = members.some((member) => member.id === userId);
@@ -57,21 +51,25 @@ export function CreateGroupForm({ onCreated }: { onCreated?: () => void }) {
       return;
     }
 
-    const user = publicUsers.find((item) => item.id === userId);
+    const user = users.find((item) => item.id === userId);
     if (!user) return;
 
     setMembers((current) => [
       ...current,
       {
         id: user.id,
-        name: user.name,
-        initial: user.initial,
+        username: user.username,
+        email: user.email,
+        isStaff: user.isStaff,
         role: current.length === 0 ? "admin" : "member",
       },
     ]);
   }
 
-  function setMemberRole(userId: string, role: GroupMemberRole) {
+  function setMemberRole(
+    userId: string,
+    role: Exclude<ConversationMemberRole, "owner">,
+  ) {
     setMembers((current) =>
       current.map((member) =>
         member.id === userId ? { ...member, role } : member,
@@ -103,29 +101,33 @@ export function CreateGroupForm({ onCreated }: { onCreated?: () => void }) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const result = groupChatSchema.safeParse({
-      name,
-      imageDataUrl,
-      members,
-    });
-
-    if (!result.success) {
-      const issue = result.error.issues[0];
-      const issuePath = issue?.path[0];
-
-      setError(
-        issuePath === "name"
-          ? t("groupNameRequired")
-          : issue?.code === "custom"
-            ? t("groupAdminRequired")
-            : t("groupMembersRequired"),
-      );
+    if (name.trim().length < 2) {
+      setError(t("groupNameRequired"));
       return;
     }
 
-    const group = createGroupChat(result.data);
-    onCreated?.();
-    router.push(`/app/chats/${group.id}`);
+    if (members.length === 0) {
+      setError(t("groupMembersRequired"));
+      return;
+    }
+
+    createGroupMutation.mutate(
+      {
+        name: name.trim(),
+        imageUrl: imageDataUrl,
+        members: members.map((member) => ({
+          userId: member.id,
+          role: member.role,
+        })),
+      },
+      {
+        onSuccess: (conversation) => {
+          onCreated?.();
+          router.push(`/app/chats/${conversation.id}`);
+        },
+        onError: (mutationError) => setError(mutationError.message),
+      },
+    );
   }
 
   return (
@@ -199,7 +201,7 @@ export function CreateGroupForm({ onCreated }: { onCreated?: () => void }) {
         />
 
         <div className="max-h-56 space-y-2 overflow-y-auto pe-1">
-          {filteredUsers.map((user) => {
+          {users.map((user) => {
             const selectedMember = members.find(
               (member) => member.id === user.id,
             );
@@ -212,11 +214,11 @@ export function CreateGroupForm({ onCreated }: { onCreated?: () => void }) {
                 <Checkbox
                   checked={Boolean(selectedMember)}
                   onCheckedChange={() => toggleMember(user.id)}
-                  aria-label={user.name}
+                  aria-label={user.username}
                 />
                 <Avatar className="size-9 after:border-0">
                   <AvatarFallback className="bg-primary/10 text-xs font-bold text-primary">
-                    {user.initial}
+                    {user.username.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <button
@@ -225,10 +227,10 @@ export function CreateGroupForm({ onCreated }: { onCreated?: () => void }) {
                   className="min-w-0 flex-1 text-start"
                 >
                   <Typography as="span" className="block truncate text-sm font-semibold">
-                    {user.name}
+                    {user.username}
                   </Typography>
                   <Typography as="span" variant="muted" className="block truncate text-xs">
-                    {user.username}
+                    {user.email}
                   </Typography>
                 </button>
 
@@ -236,7 +238,10 @@ export function CreateGroupForm({ onCreated }: { onCreated?: () => void }) {
                   <Select
                     value={selectedMember.role}
                     onValueChange={(value) =>
-                      setMemberRole(user.id, value as GroupMemberRole)
+                      setMemberRole(
+                        user.id,
+                        value as Exclude<ConversationMemberRole, "owner">,
+                      )
                     }
                   >
                     <SelectTrigger size="sm" className="w-[92px]">
@@ -251,9 +256,14 @@ export function CreateGroupForm({ onCreated }: { onCreated?: () => void }) {
               </div>
             );
           })}
-          {filteredUsers.length === 0 ? (
+          {query.trim() && !usersQuery.isLoading && users.length === 0 ? (
             <Typography as="p" variant="muted" className="py-6 text-center text-sm">
               {t("noGroupUsers")}
+            </Typography>
+          ) : null}
+          {!query.trim() ? (
+            <Typography as="p" variant="muted" className="py-6 text-center text-sm">
+              {t("searchToAddMembers")}
             </Typography>
           ) : null}
         </div>
@@ -267,11 +277,15 @@ export function CreateGroupForm({ onCreated }: { onCreated?: () => void }) {
 
       <Button
         type="submit"
-        disabled={!name.trim() || members.length === 0}
+        disabled={
+          !name.trim() || members.length === 0 || createGroupMutation.isPending
+        }
         className="h-11 w-full rounded-xl font-bold"
       >
         <Icon icon="solar:users-group-rounded-bold" className="size-5" />
-        {t("createGroupSubmit")}
+        {createGroupMutation.isPending
+          ? t("creatingGroup")
+          : t("createGroupSubmit")}
       </Button>
     </form>
   );

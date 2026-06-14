@@ -3,10 +3,13 @@
 import { Icon } from "@iconify/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
+import {
+  useChatUsersSearchQuery,
+  useCreateDirectConversationMutation,
+} from "@/apis/queries/chat/queries";
 import { ChatAvatar } from "@/components/page/chats/chat-avatar";
-import { chats } from "@/components/page/chats/chat-data";
 import { CreateGroupForm } from "@/components/page/chats/create-group-form";
 import { Button } from "@/components/ui/button";
 import {
@@ -35,18 +38,9 @@ export function StartChatDialog() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const filteredUsers = useMemo(() => {
-    const normalized = query.trim().toLowerCase().replace(/^@/, "");
-
-    return normalized
-      ? chats.filter(
-          (chat) =>
-            chat.name.toLowerCase().includes(normalized) ||
-            chat.id.toLowerCase().includes(normalized) ||
-            chat.status.toLowerCase().includes(normalized),
-        )
-      : chats;
-  }, [query]);
+  const usersQuery = useChatUsersSearchQuery({ query });
+  const createDirectMutation = useCreateDirectConversationMutation();
+  const users = usersQuery.data ?? [];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -89,16 +83,36 @@ export function StartChatDialog() {
             </InputGroup>
 
             <div className="space-y-2">
-              {filteredUsers.map((chat) => (
+              {users.map((user) => {
+                const chat = {
+                  id: user.id,
+                  name: user.username,
+                  initial: user.username.charAt(0).toUpperCase(),
+                  preview: user.email,
+                  time: "",
+                  unread: false,
+                  tone: "violet" as const,
+                  status: user.email,
+                };
+
+                return (
                 <Button
-                  key={chat.id}
+                  key={user.id}
                   type="button"
                   variant="ghost"
                   tone="neutral"
                   className="flex h-auto w-full min-w-0 justify-start gap-3 rounded-2xl px-2 py-2.5 text-start"
+                  disabled={createDirectMutation.isPending}
                   onClick={() => {
-                    setOpen(false);
-                    router.push(`/app/chats/${chat.id}`);
+                    createDirectMutation.mutate(
+                      { targetUserId: user.id },
+                      {
+                        onSuccess: (conversation) => {
+                          setOpen(false);
+                          router.push(`/app/chats/${conversation.id}`);
+                        },
+                      },
+                    );
                   }}
                 >
                   <ChatAvatar chat={chat} className="size-10" />
@@ -114,10 +128,20 @@ export function StartChatDialog() {
                     {t("select")}
                   </span>
                 </Button>
-              ))}
-              {filteredUsers.length === 0 ? (
+              )})}
+              {query.trim() && !usersQuery.isLoading && users.length === 0 ? (
                 <Typography as="p" variant="muted" className="py-8 text-center text-sm">
                   {t("noUsers")}
+                </Typography>
+              ) : null}
+              {!query.trim() ? (
+                <Typography as="p" variant="muted" className="py-8 text-center text-sm">
+                  {t("searchToStart")}
+                </Typography>
+              ) : null}
+              {createDirectMutation.error ? (
+                <Typography as="p" className="text-sm text-destructive">
+                  {createDirectMutation.error.message}
                 </Typography>
               ) : null}
             </div>

@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.db.models import Q
 from django.middleware.csrf import get_token
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -197,7 +198,13 @@ class RefreshView(APIView):
             )
 
         serializer = TokenRefreshSerializer(data={'refresh': refresh_token})
-        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError:
+            return Response(
+                {'detail': 'Refresh token is invalid or expired.'},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         payload = {
             'access': serializer.validated_data['access'],
@@ -221,8 +228,15 @@ class LogoutView(APIView):
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        enforce_csrf(request)
-        refresh_token = request.COOKIES.get(settings.JWT_COOKIE_REFRESH_NAME)
+        cookie_refresh_token = request.COOKIES.get(settings.JWT_COOKIE_REFRESH_NAME)
+        if cookie_refresh_token:
+            enforce_csrf(request)
+
+        refresh_token = (
+            cookie_refresh_token
+            or request.data.get('refresh')
+            or request.data.get('refresh_token')
+        )
         if refresh_token:
             try:
                 RefreshToken(refresh_token).blacklist()
@@ -239,3 +253,51 @@ class MeView(APIView):
 
     def get(self, request):
         return Response({'user': user_payload(request.user)})
+
+
+class UserListView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        User = get_user_model()
+        users = User.objects.filter(is_active=True).exclude(id=request.user.id)
+        search = request.query_params.get('search', '').strip()
+        raw_ids = request.query_params.get('ids', '')
+
+        if raw_ids:
+            user_ids = [
+                value
+                for value in raw_ids.split(',')
+                if value.strip().isdigit()
+            ]
+            users = users.filter(id__in=user_ids)
+
+        if search:
+            users = users.filter(
+                Q(username__icontains=search)
+                | Q(email__icontains=search)
+            )
+
+        return Response({
+            'users': [
+                user_payload(user)
+                for user in users.order_by('username')[:50]
+            ],
+        })
+
+
+class UserDetailView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, user_id):
+        User = get_user_model()
+
+        try:
+            user = User.objects.get(id=user_id, is_active=True)
+        except User.DoesNotExist:
+            return Response(
+                {'detail': 'User not found.'},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        return Response({'user': user_payload(user)})
