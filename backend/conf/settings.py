@@ -46,6 +46,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
     'users',
+    'goals',
+    'social',
+    'wallet',
 ]
 
 AUTH_USER_MODEL = 'users.User'
@@ -145,6 +148,7 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 AI_SERVICE_URL = os.getenv('AI_SERVICE_URL', 'http://ai-service:8000')
+WALLET_DEFAULT_MONEY_CURRENCY = os.getenv('WALLET_DEFAULT_MONEY_CURRENCY', 'USD')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -165,7 +169,7 @@ REST_FRAMEWORK = {
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'NxT API',
-    'DESCRIPTION': 'Authentication, users, and social follow API for NxT.',
+    'DESCRIPTION': 'Authentication, users, goals, wallet, and social APIs for NxT.',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'SWAGGER_UI_SETTINGS': {
@@ -176,6 +180,9 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Auth', 'description': 'Registration, login, token refresh, logout.'},
         {'name': 'Users', 'description': 'Profile and user directory.'},
         {'name': 'Follow', 'description': 'Follow graph: follow/unfollow, followers, following.'},
+        {'name': 'Goals', 'description': 'Goal creation, membership, progress, and status.'},
+        {'name': 'Wallet', 'description': 'Multi-wallet balances and ledger history.'},
+        {'name': 'Social', 'description': 'Posts, comments, likes, saves, shares, feed, and explore.'},
     ],
 }
 

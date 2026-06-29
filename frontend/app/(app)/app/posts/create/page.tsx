@@ -25,8 +25,6 @@ export default function CreatePostPage() {
           uploadHint: t("uploadHint"),
           note: t("note"),
           notePlaceholder: t("notePlaceholder"),
-          validator: t("validator"),
-          validatorHint: t("validatorHint"),
           stakeReminder: t("stakeReminder"),
           submit: t("submitPost"),
           save: t("savePost"),

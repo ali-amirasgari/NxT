@@ -1,0 +1,40 @@
+from django.urls import re_path
+
+from .views import (
+    CommentDetailView,
+    CommentLikeView,
+    ExploreSearchView,
+    ExploreView,
+    FeedView,
+    PostCommentsView,
+    PostDetailView,
+    PostLikeView,
+    PostListCreateView,
+    PostSaveView,
+    PostShareView,
+)
+
+urlpatterns = [
+    re_path(r'^posts$', PostListCreateView.as_view(), name='posts-list-no-slash'),
+    re_path(r'^posts/$', PostListCreateView.as_view(), name='posts-list'),
+    re_path(r'^posts/(?P<post_id>[0-9]+)$', PostDetailView.as_view(), name='posts-detail-no-slash'),
+    re_path(r'^posts/(?P<post_id>[0-9]+)/$', PostDetailView.as_view(), name='posts-detail'),
+    re_path(r'^posts/(?P<post_id>[0-9]+)/like$', PostLikeView.as_view(), name='posts-like-no-slash'),
+    re_path(r'^posts/(?P<post_id>[0-9]+)/like/$', PostLikeView.as_view(), name='posts-like'),
+    re_path(r'^posts/(?P<post_id>[0-9]+)/save$', PostSaveView.as_view(), name='posts-save-no-slash'),
+    re_path(r'^posts/(?P<post_id>[0-9]+)/save/$', PostSaveView.as_view(), name='posts-save'),
+    re_path(r'^posts/(?P<post_id>[0-9]+)/share$', PostShareView.as_view(), name='posts-share-no-slash'),
+    re_path(r'^posts/(?P<post_id>[0-9]+)/share/$', PostShareView.as_view(), name='posts-share'),
+    re_path(r'^posts/(?P<post_id>[0-9]+)/comments$', PostCommentsView.as_view(), name='post-comments-no-slash'),
+    re_path(r'^posts/(?P<post_id>[0-9]+)/comments/$', PostCommentsView.as_view(), name='post-comments'),
+    re_path(r'^comments/(?P<comment_id>[0-9]+)$', CommentDetailView.as_view(), name='comments-detail-no-slash'),
+    re_path(r'^comments/(?P<comment_id>[0-9]+)/$', CommentDetailView.as_view(), name='comments-detail'),
+    re_path(r'^comments/(?P<comment_id>[0-9]+)/like$', CommentLikeView.as_view(), name='comments-like-no-slash'),
+    re_path(r'^comments/(?P<comment_id>[0-9]+)/like/$', CommentLikeView.as_view(), name='comments-like'),
+    re_path(r'^feed$', FeedView.as_view(), name='feed-list-no-slash'),
+    re_path(r'^feed/$', FeedView.as_view(), name='feed-list'),
+    re_path(r'^explore$', ExploreView.as_view(), name='explore-list-no-slash'),
+    re_path(r'^explore/$', ExploreView.as_view(), name='explore-list'),
+    re_path(r'^explore/search$', ExploreSearchView.as_view(), name='explore-search-no-slash'),
+    re_path(r'^explore/search/$', ExploreSearchView.as_view(), name='explore-search'),
+]

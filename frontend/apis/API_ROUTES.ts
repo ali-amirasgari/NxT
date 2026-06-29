@@ -28,6 +28,68 @@ export const API_ROUTES = {
       follow: (userId: string | number) => `/users/${userId}/follow`,
     },
   },
+  goals: {
+    list: "/api/goals",
+    detail: (goalId: string | number) => `/api/goals/${goalId}`,
+    upstream: {
+      list: "/goals",
+      detail: (goalId: string | number) => `/goals/${goalId}`,
+    },
+  },
+  wallet: {
+    list: "/api/wallets",
+    detail: (walletId: string | number) => `/api/wallets/${walletId}`,
+    ledger: (walletId: string | number) => `/api/wallets/${walletId}/ledger`,
+    credit: "/api/wallets/credit",
+    debit: "/api/wallets/debit",
+    hold: "/api/wallets/hold",
+    release: "/api/wallets/release",
+    capture: "/api/wallets/capture",
+    upstream: {
+      list: "/wallets",
+      detail: (walletId: string | number) => `/wallets/${walletId}`,
+      ledger: (walletId: string | number) => `/wallets/${walletId}/ledger`,
+      credit: "/wallets/credit",
+      debit: "/wallets/debit",
+      hold: "/wallets/hold",
+      release: "/wallets/release",
+      capture: "/wallets/capture",
+    },
+  },
+  social: {
+    posts: {
+      list: "/api/posts",
+      detail: (postId: string | number) => `/api/posts/${postId}`,
+      like: (postId: string | number) => `/api/posts/${postId}/like`,
+      save: (postId: string | number) => `/api/posts/${postId}/save`,
+      share: (postId: string | number) => `/api/posts/${postId}/share`,
+      comments: (postId: string | number) => `/api/posts/${postId}/comments`,
+    },
+    comments: {
+      detail: (commentId: string | number) => `/api/comments/${commentId}`,
+      like: (commentId: string | number) => `/api/comments/${commentId}/like`,
+    },
+    feed: "/api/feed",
+    explore: "/api/explore",
+    exploreSearch: "/api/explore/search",
+    upstream: {
+      posts: {
+        list: "/posts",
+        detail: (postId: string | number) => `/posts/${postId}`,
+        like: (postId: string | number) => `/posts/${postId}/like`,
+        save: (postId: string | number) => `/posts/${postId}/save`,
+        share: (postId: string | number) => `/posts/${postId}/share`,
+        comments: (postId: string | number) => `/posts/${postId}/comments`,
+      },
+      comments: {
+        detail: (commentId: string | number) => `/comments/${commentId}`,
+        like: (commentId: string | number) => `/comments/${commentId}/like`,
+      },
+      feed: "/feed",
+      explore: "/explore",
+      exploreSearch: "/explore/search",
+    },
+  },
   chat: {
     conversations: {
       list: "/conversations",

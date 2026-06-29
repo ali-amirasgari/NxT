@@ -8,7 +8,7 @@ export function LandingStats() {
   const items = [
     { value: "847K", label: "Goals Committed" },
     { value: "2.3M", label: "XP Staked Total" },
-    { value: "94%", label: "AI Accept Rate" },
+    { value: "94%", label: "Completion Rate" },
     { value: "12K", label: "Active Right Now" },
   ];
 

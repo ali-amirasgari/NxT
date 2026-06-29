@@ -13,6 +13,45 @@ export const QUERY_KEYS = {
     follow: (userId: string | number) => ["users", "follow", String(userId)] as const,
     updateMe: ["users", "update-me"],
   },
+  goals: {
+    all: ["goals"],
+    list: (params?: Record<string, unknown>) => ["goals", "list", params ?? {}] as const,
+    detail: (goalId: string | number) => ["goals", "detail", String(goalId)] as const,
+    create: ["goals", "create"],
+    update: ["goals", "update"],
+    delete: ["goals", "delete"],
+  },
+  wallet: {
+    all: ["wallet"],
+    list: ["wallet", "list"],
+    detail: (walletId: string | number) => ["wallet", "detail", String(walletId)] as const,
+    ledger: (walletId: string | number, params?: Record<string, unknown>) =>
+      ["wallet", "ledger", String(walletId), params ?? {}] as const,
+    mutation: ["wallet", "mutation"],
+  },
+  social: {
+    posts: {
+      all: ["social", "posts"],
+      list: (params?: Record<string, unknown>) =>
+        ["social", "posts", "list", params ?? {}] as const,
+      detail: (postId: string | number) =>
+        ["social", "posts", "detail", String(postId)] as const,
+      create: ["social", "posts", "create"],
+      update: ["social", "posts", "update"],
+      delete: ["social", "posts", "delete"],
+    },
+    comments: {
+      list: (postId: string | number) =>
+        ["social", "comments", "list", String(postId)] as const,
+      create: ["social", "comments", "create"],
+      delete: ["social", "comments", "delete"],
+    },
+    feed: ["social", "feed"],
+    explore: (params?: Record<string, unknown>) =>
+      ["social", "explore", params ?? {}] as const,
+    exploreSearch: (params?: Record<string, unknown>) =>
+      ["social", "explore-search", params ?? {}] as const,
+  },
   chat: {
     conversations: {
       all: ["chat", "conversations"],

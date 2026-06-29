@@ -34,8 +34,8 @@ export function PostForm({
       author: initialPost?.author ?? "Alex Carter",
       authorInitial: initialPost?.authorInitial ?? "A",
       meta: goalTitle
-        ? `${goalTitle} · verified proof`
-        : (initialPost?.meta ?? "Goal update · verified proof"),
+        ? `${goalTitle} · proof update`
+        : (initialPost?.meta ?? "Goal update · proof"),
       title: title.trim(),
       caption: caption.trim() || labels.defaultCaption,
       likes: initialPost?.likes ?? "0 likes",
@@ -113,24 +113,6 @@ export function PostForm({
           className="min-h-24 rounded-2xl bg-card px-3.5"
         />
       </div>
-
-      <Card className="gap-0 rounded-2xl bg-muted py-0 shadow-none ring-0">
-        <CardContent className="flex gap-3 p-4">
-          <Icon
-            icon="solar:magic-stick-3-bold"
-            className="mt-0.5 size-5 shrink-0 text-primary"
-            aria-hidden="true"
-          />
-          <div>
-            <Typography as="p" variant="small" className="text-sm">
-              {labels.validator}
-            </Typography>
-            <Typography as="p" variant="muted" className="mt-1 text-xs leading-5">
-              {labels.validatorHint}
-            </Typography>
-          </div>
-        </CardContent>
-      </Card>
 
       <Button
         type="submit"

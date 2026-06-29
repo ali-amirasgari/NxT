@@ -39,8 +39,8 @@ export const PHASES: Array<{
   },
   {
     label: "RESOLVE",
-    title: "AI decides instantly",
-    desc: "Our AI validator reviews your proof in seconds. Pass: earn XP back plus rewards. Fail: points go to the winners pool.",
+    title: "Resolve the outcome",
+    desc: "Close the commitment with submitted proof. Complete goals earn rewards; missed goals lose the stake.",
     icon: CheckCircle,
   },
 ];
@@ -52,13 +52,13 @@ export const FEATURES: Array<{
 }> = [
   {
     icon: Shield,
-    title: "AI Validation Engine",
-    desc: "Vision + reasoning models verify every submission. No humans, no bias — just objective proof analysis.",
+    title: "Proof-Based Accountability",
+    desc: "Every commitment is tied to visible proof, goal history, and social accountability.",
   },
   {
     icon: Zap,
-    title: "10-Second Resolution",
-    desc: "No waiting. No appeals process. Your result is final and delivered before you can second-guess yourself.",
+    title: "Fast Progress Updates",
+    desc: "Submit proof and update your goal status without leaving the flow.",
   },
   {
     icon: Trophy,
@@ -100,7 +100,7 @@ export const TICKER_ITEMS = [
   "Alex K. committed: Run 5km before 7am — 200 XP staked",
   "Maria S. RESOLVED ✓ — Earned 340 XP",
   "James T. committed: Ship homepage redesign — 500 XP staked",
-  "Yuki A. submitted proof — AI validating...",
+  "Yuki A. submitted proof — goal updated",
   "Omar N. RESOLVED ✓ — 47-day streak continues",
   "Fatima B. committed: Read 30 pages daily — 150 XP staked",
   "Dev C. RESOLVED ✓ — Earned 820 XP",
@@ -119,4 +119,3 @@ export const LEADERBOARD_ICON = {
   Trophy,
   Flame,
 };
-

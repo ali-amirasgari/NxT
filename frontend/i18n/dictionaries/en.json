@@ -1,7 +1,7 @@
 {
   "home": {
     "title": "Turn intention into action.",
-    "subtitle": "Commit, prove, and get verified with AI.",
+    "subtitle": "Commit, prove, and keep your progress visible.",
     "paragraphOr": "or the",
     "paragraphEnd": "center.",
     "ctaPrimary": "Deploy Now",
@@ -24,7 +24,7 @@
     "hero": {
       "badge": "Commit. Prove. Resolve.",
       "title": "Build habits with verifiable commitments.",
-      "subtitle": "NxT turns goals into a simple cycle: commit points, do the work, submit proof, and let AI validate your action.",
+      "subtitle": "NxT turns goals into a simple cycle: commit points, do the work, submit proof, and track the result.",
       "ctaPrimary": "Start a commitment",
       "ctaSecondary": "See how it works"
     },
@@ -42,7 +42,7 @@
       "items": [
         {
           "title": "Verifiable proof",
-          "desc": "Submit photo, OCR, location, or activity signals. AI checks consistency and reduces fake completions."
+          "desc": "Submit photos, notes, location, or activity signals so your progress is visible and accountable."
         },
         {
           "title": "Points with consequences",
@@ -68,7 +68,7 @@
         },
         {
           "title": "Resolve",
-          "desc": "AI validates the proof. If valid, you earn rewards. If not, you lose the stake."
+          "desc": "Resolve the commitment from submitted proof and update the goal outcome."
         }
       ]
     },
@@ -89,9 +89,9 @@
         {
           "title": "NxT Pro (soon)",
           "price": "—",
-          "desc": "Deeper validation and automation for serious builders.",
+          "desc": "More automation and integrations for serious builders.",
           "bullets": [
-            "Advanced AI checks",
+            "Advanced progress tools",
             "Integrations",
             "Priority processing"
           ]
@@ -301,12 +301,10 @@
       "uploadHint": "Tap to choose a file from your device",
       "note": "Add a note",
       "notePlaceholder": "What did you accomplish?",
-      "validator": "AI Validator ready",
-      "validatorHint": "Your proof will be checked against the goal before it is published.",
       "stakeReminder": "Complete the proof to protect your point stake.",
-      "submitPost": "Submit for Validation",
+      "submitPost": "Submit Proof",
       "savePost": "Save Post",
-      "defaultCaption": "Proof submitted and ready for validation."
+      "defaultCaption": "Proof submitted."
     },
     "contentActions": {
       "title": "Options",

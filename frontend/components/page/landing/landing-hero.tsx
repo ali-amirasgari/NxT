@@ -401,7 +401,7 @@ export function LandingHero() {
             </Typography>
 
             <Typography as="p" className="text-lg leading-relaxed mb-10 max-w-lg text-secondary-foreground/75">
-              Stake virtual XP on your goals. Execute them. Submit proof. AI validates instantly — trustless, unbiased, and completely merciless.
+              Stake virtual XP on your goals. Execute them. Submit proof. Resolve the commitment and keep your progress visible.
             </Typography>
 
             <div className="flex items-center gap-3 mb-10 flex-wrap">
