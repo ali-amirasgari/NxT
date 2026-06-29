@@ -80,13 +80,21 @@
           "title": "Free",
           "price": "$0",
           "desc": "Everything you need to begin proving action.",
-          "bullets": ["Unlimited goals", "Basic proof checks", "Streak tracking"]
+          "bullets": [
+            "Unlimited goals",
+            "Basic proof checks",
+            "Streak tracking"
+          ]
         },
         {
           "title": "NxT Pro (soon)",
           "price": "—",
           "desc": "Deeper validation and automation for serious builders.",
-          "bullets": ["Advanced AI checks", "Integrations", "Priority processing"]
+          "bullets": [
+            "Advanced AI checks",
+            "Integrations",
+            "Priority processing"
+          ]
         }
       ]
     },
@@ -145,7 +153,10 @@
       "goals": "Goals",
       "points": "Points",
       "streak": "Streak",
-      "shared": "Shared"
+      "shared": "Shared",
+      "followers": "Followers",
+      "followingCount": "Following",
+      "notFound": "User not found."
     },
     "notifications": {
       "title": "Notifications",
@@ -217,7 +228,11 @@
       "goals": "Goals",
       "points": "Points",
       "streak": "Streak",
-      "shared": "Shared"
+      "shared": "Shared",
+      "followers": "Followers",
+      "following": "Following",
+      "loadError": "Couldn't load your profile.",
+      "retry": "Try again"
     },
     "profileSettings": {
       "title": "Settings",
@@ -229,7 +244,8 @@
       "notificationsTitle": "Notifications",
       "notificationsDescription": "Proof reminders and social activity",
       "save": "Save Settings",
-      "saved": "Settings saved"
+      "saved": "Settings saved",
+      "saveError": "Couldn't save settings."
     },
     "editProfile": {
       "title": "Edit Profile",
@@ -241,7 +257,9 @@
       "username": "Username",
       "bio": "Bio",
       "update": "Update Profile",
-      "updated": "Profile updated"
+      "updated": "Profile updated",
+      "avatarUrl": "Avatar URL",
+      "updateError": "Couldn't update profile."
     },
     "goals": {
       "title": "Goals",

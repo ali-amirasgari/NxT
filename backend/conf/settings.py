@@ -44,7 +44,15 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
-    'auth_app',
+    'drf_spectacular',
+    'users',
+]
+
+AUTH_USER_MODEL = 'users.User'
+
+AUTHENTICATION_BACKENDS = [
+    'users.authentication.EmailOrUsernameBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 MIDDLEWARE = [
@@ -78,27 +86,25 @@ TEMPLATES = [
 WSGI_APPLICATION = 'conf.wsgi.application'
 
 
-# Database
+# Database — MySQL only (utf8mb4, strict mode, pooled connections with health checks).
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-if os.getenv('POSTGRES_HOST'):
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('POSTGRES_DB', 'nxt'),
-            'USER': os.getenv('POSTGRES_USER', 'nxt'),
-            'PASSWORD': os.getenv('POSTGRES_PASSWORD', 'nxt'),
-            'HOST': os.getenv('POSTGRES_HOST', 'db'),
-            'PORT': os.getenv('POSTGRES_PORT', '5432'),
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('MYSQL_DATABASE', 'nxt'),
+        'USER': os.getenv('MYSQL_USER', 'nxt'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD', 'nxt'),
+        'HOST': os.getenv('MYSQL_HOST', 'db'),
+        'PORT': os.getenv('MYSQL_PORT', '3306'),
+        'CONN_MAX_AGE': int(os.getenv('MYSQL_CONN_MAX_AGE', '60')),
+        'CONN_HEALTH_CHECKS': True,
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        },
     }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+}
 
 
 # Password validation
@@ -149,11 +155,28 @@ def env_list(name, default=''):
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'auth_app.authentication.CookieJWTAuthentication',
+        'users.authentication.CookieJWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'NxT API',
+    'DESCRIPTION': 'Authentication, users, and social follow API for NxT.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SWAGGER_UI_SETTINGS': {
+        'persistAuthorization': True,
+    },
+    'PREPROCESSING_HOOKS': ['users.schema.keep_canonical_paths'],
+    'TAGS': [
+        {'name': 'Auth', 'description': 'Registration, login, token refresh, logout.'},
+        {'name': 'Users', 'description': 'Profile and user directory.'},
+        {'name': 'Follow', 'description': 'Follow graph: follow/unfollow, followers, following.'},
+    ],
 }
 
 SIMPLE_JWT = {

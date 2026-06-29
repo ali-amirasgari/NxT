@@ -16,17 +16,39 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 
-from auth_app.views import MeView, UserDetailView, UserListView
+from users.views import (
+    FollowersListView,
+    FollowingListView,
+    FollowView,
+    MeView,
+    UserDetailView,
+    UserListView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/auth/', include('auth_app.urls')),
-    path('auth/', include('auth_app.urls')),
+    # OpenAPI schema + interactive docs
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path('api/auth/', include('users.urls')),
+    path('auth/', include('users.urls')),
     path('users/me', MeView.as_view(), name='users-me-no-slash'),
     path('users/me/', MeView.as_view(), name='users-me'),
     path('users', UserListView.as_view(), name='users-list-no-slash'),
     path('users/', UserListView.as_view(), name='users-list'),
+    path('users/<int:user_id>/follow', FollowView.as_view(), name='users-follow-no-slash'),
+    path('users/<int:user_id>/follow/', FollowView.as_view(), name='users-follow'),
+    path('users/<int:user_id>/followers', FollowersListView.as_view(), name='users-followers-no-slash'),
+    path('users/<int:user_id>/followers/', FollowersListView.as_view(), name='users-followers'),
+    path('users/<int:user_id>/following', FollowingListView.as_view(), name='users-following-no-slash'),
+    path('users/<int:user_id>/following/', FollowingListView.as_view(), name='users-following'),
     path('users/<int:user_id>', UserDetailView.as_view(), name='users-detail-no-slash'),
     path('users/<int:user_id>/', UserDetailView.as_view(), name='users-detail'),
 ]

@@ -14,7 +14,19 @@ export const API_ROUTES = {
     },
   },
   users: {
-    me: "/users/me",
+    // Browser-facing BFF endpoints (same-origin Next.js route handlers that
+    // attach the access-token cookie and proxy to the Django backend).
+    me: "/api/users/me",
+    list: "/api/users",
+    detail: (userId: string | number) => `/api/users/${userId}`,
+    follow: (userId: string | number) => `/api/users/${userId}/follow`,
+    // Upstream Django paths consumed by the BFF handlers above.
+    upstream: {
+      me: "/users/me",
+      list: "/users",
+      detail: (userId: string | number) => `/users/${userId}`,
+      follow: (userId: string | number) => `/users/${userId}/follow`,
+    },
   },
   chat: {
     conversations: {

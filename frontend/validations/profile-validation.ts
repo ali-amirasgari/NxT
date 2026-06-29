@@ -1,12 +1,15 @@
 import { z } from "zod";
 
+/**
+ * Editable own-profile fields. Mirrors the Django `ProfileUpdateSerializer`
+ * field constraints (display_name ≤ 150, bio ≤ 160). Username is the immutable
+ * login identifier and is not editable here.
+ */
 export const profileSchema = z.object({
-  name: z.string().trim().min(2, "Name must be at least 2 characters"),
-  username: z
+  name: z
     .string()
     .trim()
-    .min(3, "Username must be at least 3 characters")
-    .regex(/^@[a-zA-Z0-9_]+$/, "Use @ followed by letters, numbers, or underscores"),
+    .max(150, "Name must be 150 characters or less"),
   bio: z.string().trim().max(160, "Bio must be 160 characters or less"),
 });
 

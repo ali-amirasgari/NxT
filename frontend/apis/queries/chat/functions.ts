@@ -1,5 +1,7 @@
 import chatRestService from "@/apis/services/chatRestService";
+import userService from "@/apis/services/userService";
 import type {
+  ChatUser,
   CreateDirectConversationPayload,
   CreateGroupConversationPayload,
   GetConversationParams,
@@ -39,8 +41,19 @@ export async function updateConversationMembers(
   return chatRestService.updateConversationMembers(conversationId, payload);
 }
 
-export async function searchChatUsers(params: SearchChatUsersParams) {
-  return chatRestService.searchUsers(params);
+export async function searchChatUsers(
+  params: SearchChatUsersParams,
+): Promise<ChatUser[]> {
+  // Repointed to the users BFF (Django users API) so chat search shares the
+  // same source of truth as the rest of the user/profile domain.
+  const users = await userService.searchUsers({ search: params.query });
+
+  return users.map((user) => ({
+    id: String(user.id),
+    username: user.username,
+    email: user.email,
+    isStaff: user.is_staff,
+  }));
 }
 
 export async function listNotifications(params?: ListNotificationsParams) {

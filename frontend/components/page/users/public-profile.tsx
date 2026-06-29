@@ -4,30 +4,39 @@ import { Icon } from "@iconify/react";
 import Link from "next/link";
 import { useState } from "react";
 
-import type { PublicUser } from "@/components/global/users-data";
+import { useFollowMutation, useUnfollowMutation } from "@/apis/queries/users/queries";
+import type { User } from "@/apis/types/user";
 import { ProfileMediaGrid } from "@/components/page/profile/profile-media-grid";
 import { ProfileStat } from "@/components/page/profile/profile-stat";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Typography } from "@/components/ui/typography";
+import { resolveDisplayName, userInitial } from "@/lib/user-display";
 import { cn } from "@/lib/utils";
 
 type PublicProfileProps = {
-  user: PublicUser;
+  user: User;
   labels: Record<string, string>;
 };
 
 export function PublicProfile({ user, labels }: PublicProfileProps) {
   const [activeTab, setActiveTab] = useState<"goals" | "shared">("shared");
-  const [following, setFollowing] = useState(false);
-  const stats = [
-    { value: user.stats.posts, label: labels.posts },
-    { value: user.stats.goals, label: labels.goals },
-    { value: user.stats.points, label: labels.points },
-    { value: user.stats.streak, label: labels.streak },
-  ];
+  const followMutation = useFollowMutation();
+  const unfollowMutation = useUnfollowMutation();
+
+  const displayName = resolveDisplayName(user);
+  const isPending = followMutation.isPending || unfollowMutation.isPending;
+
+  function toggleFollow() {
+    if (isPending) return;
+
+    if (user.is_following) {
+      unfollowMutation.mutate(user.id);
+    } else {
+      followMutation.mutate(user.id);
+    }
+  }
 
   return (
     <section className="mx-auto w-full max-w-[390px] px-1 md:max-w-5xl md:px-0">
@@ -44,7 +53,7 @@ export function PublicProfile({ user, labels }: PublicProfileProps) {
           </Link>
         </Button>
         <Typography as="h1" className="min-w-0 flex-1 truncate text-lg font-bold">
-          {user.username}
+          @{user.username}
         </Typography>
         <Button
           asChild
@@ -69,42 +78,41 @@ export function PublicProfile({ user, labels }: PublicProfileProps) {
         </Card>
 
         <Avatar className="absolute start-1.5 top-9 size-[84px] border-4 border-background after:hidden">
+          {user.avatar_url ? <AvatarImage src={user.avatar_url} alt={displayName} /> : null}
           <AvatarFallback className="bg-primary text-[22px] font-bold text-primary-foreground">
-            {user.initial}
+            {userInitial(user)}
           </AvatarFallback>
         </Avatar>
 
-        <div className="ms-[108px] grid grid-cols-4 gap-1 pt-2">
-          {stats.map((stat) => (
-            <ProfileStat key={stat.label} value={stat.value} label={stat.label} />
-          ))}
+        <div className="ms-[108px] grid grid-cols-2 gap-1 pt-2">
+          <ProfileStat value={String(user.followers_count)} label={labels.followers} />
+          <ProfileStat value={String(user.following_count)} label={labels.followingCount} />
         </div>
       </div>
 
       <div className="mt-4 space-y-3">
         <div>
           <Typography as="h2" className="border-0 pb-0 text-lg font-bold">
-            {user.name}
+            {displayName}
           </Typography>
-          <Typography as="p" className="max-w-[335px] text-[13px] leading-5 text-muted-foreground">
-            {user.bio}
-          </Typography>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {user.interests.map((interest) => (
-            <Badge key={interest} variant="secondary" className="rounded-full">
-              {interest}
-            </Badge>
-          ))}
+          {user.bio ? (
+            <Typography
+              as="p"
+              className="max-w-[335px] text-[13px] leading-5 text-muted-foreground"
+            >
+              {user.bio}
+            </Typography>
+          ) : null}
         </div>
         <Button
           type="button"
           className="h-10 w-full rounded-2xl font-bold"
-          variant={following ? "secondary" : "default"}
-          tone={following ? "neutral" : "primary"}
-          onClick={() => setFollowing((value) => !value)}
+          variant={user.is_following ? "secondary" : "default"}
+          tone={user.is_following ? "neutral" : "primary"}
+          disabled={isPending}
+          onClick={toggleFollow}
         >
-          {following ? labels.following : labels.follow}
+          {user.is_following ? labels.following : labels.follow}
         </Button>
       </div>
 
