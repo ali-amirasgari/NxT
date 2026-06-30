@@ -127,7 +127,6 @@
       "explore": "کاوش",
       "goals": "هدف‌ها",
       "chats": "گفتگوها",
-      "leaderboard": "رتبه‌بندی",
       "profile": "پروفایل",
       "createGoal": "ساخت هدف"
     },
@@ -137,6 +136,14 @@
       "searchLabel": "جست‌وجو در کاوش",
       "searchPlaceholder": "جست‌وجوی هدف یا افراد",
       "creators": "افراد پیشنهادی",
+      "loading": "در حال بارگذاری کاوش...",
+      "loadError": "بارگذاری کاوش ممکن نشد.",
+      "retry": "تلاش دوباره",
+      "empty": "هنوز چیزی برای کاوش نیست.",
+      "suggestedTitle": "پیشنهاد برای تو",
+      "suggestedPosts": "پست‌ها",
+      "suggestedGoals": "هدف‌ها",
+      "suggestedEmpty": "هنوز پیشنهادی نیست.",
       "filters": {
         "forYou": "برای تو",
         "fitness": "ورزش",
@@ -189,9 +196,11 @@
       "suggestedTitle": "هدف‌های پیشنهادی",
       "emptyTitle": "نتیجه‌ای پیدا نشد",
       "emptyDescription": "نام، هدف یا برچسب دیگری را امتحان کن.",
+      "loading": "در حال جست‌وجو...",
       "progress": "پیشرفت",
       "filters": {
         "all": "همه",
+        "posts": "پست‌ها",
         "accounts": "حساب‌ها",
         "goals": "هدف‌ها",
         "tags": "برچسب‌ها"
@@ -219,7 +228,10 @@
       "summaryCompletedValue": "۷",
       "summaryCompletedLabel": "مدرک ثبت‌شده",
       "summaryStreakValue": "۵ روز",
-      "summaryStreakLabel": "استریک فعلی"
+      "summaryStreakLabel": "استریک فعلی",
+      "empty": "هنوز هدف فعالی نداری. یک هدف بساز تا شروع کنی.",
+      "loadError": "بارگذاری هدف‌ها ممکن نشد.",
+      "retry": "تلاش دوباره"
     },
     "profile": {
       "openSettings": "باز کردن تنظیمات",
@@ -232,7 +244,9 @@
       "followers": "دنبال‌کننده",
       "following": "دنبال‌شده",
       "loadError": "بارگذاری پروفایل ممکن نشد.",
-      "retry": "تلاش دوباره"
+      "retry": "تلاش دوباره",
+      "emptyGoals": "هنوز هدفی نیست.",
+      "emptyShared": "هنوز پستی نیست."
     },
     "profileSettings": {
       "title": "تنظیمات",
@@ -264,7 +278,10 @@
     "goals": {
       "title": "هدف‌ها",
       "description": "هر هدف را باز کن و پیشرفت، امتیاز، برنامه و مدارک آن را ببین.",
-      "progress": "پیشرفت"
+      "progress": "پیشرفت",
+      "empty": "هنوز هدفی نداری. اولین هدفت را بساز.",
+      "loadError": "بارگذاری هدف‌ها ممکن نشد.",
+      "retry": "تلاش دوباره"
     },
     "create": {
       "back": "بازگشت",
@@ -283,6 +300,7 @@
       "description": "توضیحات",
       "descriptionPlaceholder": "توضیحات روشنی اضافه کن",
       "category": "دسته‌بندی",
+      "categoryPlaceholder": "یک دسته‌بندی انتخاب کن",
       "categorySearch": "جستجوی دسته‌بندی...",
       "noCategory": "دسته‌بندی پیدا نشد",
       "stake": "امتیاز شرط",
@@ -304,7 +322,9 @@
       "stakeReminder": "برای حفظ امتیازت مدرک این هدف را کامل کن.",
       "submitPost": "ارسال مدرک",
       "savePost": "ذخیره پست",
-      "defaultCaption": "مدرک ارسال شد."
+      "defaultCaption": "مدرک ارسال شد.",
+      "notFound": "این محتوا پیدا نشد.",
+      "error": "مشکلی پیش آمد. دوباره تلاش کن."
     },
     "contentActions": {
       "title": "گزینه‌ها",
@@ -332,7 +352,13 @@
       "like": "پسندیدن",
       "comment": "نظر",
       "share": "اشتراک‌گذاری",
-      "submitProof": "ارسال مدرک"
+      "submitProof": "ارسال مدرک",
+      "notFound": "این محتوا پیدا نشد.",
+      "likes": "{count} پسند",
+      "comments": "دیدن همه {count} نظر",
+      "points": "{count} امتیاز",
+      "groupGoal": "هدف گروهی",
+      "soloGoal": "هدف انفرادی"
     },
     "comments": {
       "title": "نظرها",
@@ -342,7 +368,10 @@
       "send": "ارسال نظر",
       "reply": "پاسخ",
       "like": "پسندیدن",
-      "added": "نظر اضافه شد"
+      "added": "نظر اضافه شد",
+      "loading": "در حال بارگذاری نظرها...",
+      "empty": "هنوز نظری نیست. اولین نفر باشید.",
+      "error": "ارسال نظر شما ممکن نشد."
     },
     "chats": {
       "title": "گفتگوها",
@@ -400,7 +429,10 @@
       "send": "ارسال",
       "sent": "ارسال شد",
       "copy": "کپی لینک",
-      "copied": "لینک کپی شد"
+      "copied": "لینک کپی شد",
+      "prompt": "برای اشتراک‌گذاری، کسی را جست‌وجو کنید.",
+      "loading": "در حال جست‌وجو...",
+      "empty": "کاربری یافت نشد."
     }
   }
 }

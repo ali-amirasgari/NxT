@@ -17,6 +17,10 @@ export async function searchUsers(params: SearchUsersParams) {
   return userService.searchUsers(params);
 }
 
+export async function listUsers(params?: SearchUsersParams) {
+  return userService.listUsers(params);
+}
+
 export async function followUser(userId: string | number) {
   return userService.followUser(userId);
 }

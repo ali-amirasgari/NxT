@@ -1,3 +1,4 @@
+from .categories import CategoryListView, SuggestedView
 from .posts import (
     CommentDetailView,
     CommentLikeView,
@@ -13,6 +14,7 @@ from .posts import (
 )
 
 __all__ = [
+    'CategoryListView',
     'CommentDetailView',
     'CommentLikeView',
     'ExploreSearchView',
@@ -24,4 +26,5 @@ __all__ = [
     'PostListCreateView',
     'PostSaveView',
     'PostShareView',
+    'SuggestedView',
 ]

@@ -17,6 +17,7 @@ type DetailActionsProps = {
   shareOpen: boolean;
   onShareOpenChange: (open: boolean) => void;
   shareUrl: string;
+  postId?: number;
 };
 
 export function DetailActions({
@@ -28,6 +29,7 @@ export function DetailActions({
   shareOpen,
   onShareOpenChange,
   shareUrl,
+  postId,
 }: DetailActionsProps) {
   const commentsT = useTranslations("app.comments");
   const shareT = useTranslations("app.share");
@@ -89,6 +91,7 @@ export function DetailActions({
       <CommentsDrawer
         open={commentsOpen}
         onOpenChange={onCommentsOpenChange}
+        postId={postId}
         labels={{
           title: commentsT("title"),
           description: commentsT("description"),
@@ -98,6 +101,9 @@ export function DetailActions({
           reply: commentsT("reply"),
           like: commentsT("like"),
           added: commentsT("added"),
+          loading: commentsT("loading"),
+          empty: commentsT("empty"),
+          error: commentsT("error"),
         }}
       />
       <ShareDrawer
@@ -112,6 +118,9 @@ export function DetailActions({
           sent: shareT("sent"),
           copy: shareT("copy"),
           copied: shareT("copied"),
+          prompt: shareT("prompt"),
+          loading: shareT("loading"),
+          empty: shareT("empty"),
         }}
       />
     </>

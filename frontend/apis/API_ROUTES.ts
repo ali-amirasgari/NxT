@@ -72,6 +72,8 @@ export const API_ROUTES = {
     feed: "/api/feed",
     explore: "/api/explore",
     exploreSearch: "/api/explore/search",
+    categories: "/api/categories",
+    suggested: "/api/suggested",
     upstream: {
       posts: {
         list: "/posts",
@@ -88,6 +90,8 @@ export const API_ROUTES = {
       feed: "/feed",
       explore: "/explore",
       exploreSearch: "/explore/search",
+      categories: "/categories",
+      suggested: "/suggested",
     },
   },
   chat: {

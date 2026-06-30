@@ -2,11 +2,16 @@
 
 import { Icon } from "@iconify/react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
+import { useGoalsQuery } from "@/apis/queries/goals/queries";
+import { usePostsQuery } from "@/apis/queries/social/queries";
+import { useMeQuery } from "@/apis/queries/users/queries";
+import type { PostMediaTone } from "@/apis/types/social";
 import { ContentOptionsMenu } from "@/components/global/content-options-menu";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Typography } from "@/components/ui/typography";
-import { useContent } from "@/hooks/use-content";
 
 const goalSurfaces = [
   "bg-secondary text-secondary-foreground",
@@ -14,22 +19,52 @@ const goalSurfaces = [
   "bg-muted text-foreground",
 ] as const;
 
-const postSurfaces = {
+const postSurfaces: Record<PostMediaTone, string> = {
   primary: "bg-primary text-primary-foreground",
   secondary: "bg-secondary text-secondary-foreground",
   muted: "bg-muted text-foreground",
-} as const;
+  card: "bg-card text-card-foreground",
+};
 
 export function ProfileMediaGrid({
   tab,
   readonly = false,
+  userId,
 }: {
   tab: "goals" | "shared";
   readonly?: boolean;
+  userId?: number;
 }) {
-  const { goals, posts } = useContent();
+  const t = useTranslations("app.profile");
+  const meQuery = useMeQuery();
+  const authorId = userId ?? meQuery.data?.id;
+
+  const goalsQuery = useGoalsQuery();
+  const postsQuery = usePostsQuery(
+    authorId ? { author_id: authorId } : undefined,
+  );
 
   if (tab === "goals") {
+    const goals = goalsQuery.data ?? [];
+
+    if (goalsQuery.isLoading) {
+      return (
+        <div className="grid grid-cols-2 gap-0.5 bg-background md:gap-3">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <Skeleton key={index} className="h-[110px] rounded-none md:rounded-2xl" />
+          ))}
+        </div>
+      );
+    }
+
+    if (goals.length === 0) {
+      return (
+        <Typography as="p" variant="muted" className="py-12 text-center text-sm">
+          {t("emptyGoals")}
+        </Typography>
+      );
+    }
+
     return (
       <div className="grid grid-cols-2 gap-0.5 bg-background md:gap-3">
         {goals.map((goal, index) => (
@@ -47,7 +82,7 @@ export function ProfileMediaGrid({
                     {goal.title}
                   </Typography>
                   <Typography as="p" className="mt-1 text-xs opacity-70">
-                    {goal.progress ? `${goal.progress}%` : goal.category}
+                    {goal.progress ? `${goal.progress}%` : goal.category?.name}
                   </Typography>
                 </CardContent>
               </Card>
@@ -55,7 +90,7 @@ export function ProfileMediaGrid({
             {!readonly ? (
               <ContentOptionsMenu
                 type="goal"
-                id={goal.id}
+                id={String(goal.id)}
                 goal={goal}
                 triggerClassName="absolute end-1.5 top-1.5 size-8 bg-background/20 text-current hover:bg-background/30"
               />
@@ -63,6 +98,26 @@ export function ProfileMediaGrid({
           </div>
         ))}
       </div>
+    );
+  }
+
+  const posts = postsQuery.data ?? [];
+
+  if (postsQuery.isLoading) {
+    return (
+      <div className="grid grid-cols-3 gap-0.5 bg-background md:gap-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <Skeleton key={index} className="h-[110px] rounded-none md:rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <Typography as="p" variant="muted" className="py-12 text-center text-sm">
+        {t("emptyShared")}
+      </Typography>
     );
   }
 
@@ -76,10 +131,14 @@ export function ProfileMediaGrid({
             className="block rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:rounded-2xl"
           >
             <Card
-              className={`relative h-[110px] rounded-none border-0 py-0 shadow-none ring-0 md:rounded-2xl ${postSurfaces[post.mediaTone]}`}
+              className={`relative h-[110px] rounded-none border-0 py-0 shadow-none ring-0 md:rounded-2xl ${postSurfaces[post.media_tone]}`}
             >
               <Icon
-                icon={index % 3 === 0 ? "solar:videocamera-record-linear" : "solar:gallery-linear"}
+                icon={
+                  post.media_type === "video"
+                    ? "solar:videocamera-record-linear"
+                    : "solar:gallery-linear"
+                }
                 aria-hidden="true"
                 className="absolute end-2.5 top-2.5 size-4"
               />

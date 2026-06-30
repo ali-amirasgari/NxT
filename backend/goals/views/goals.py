@@ -22,7 +22,7 @@ def goal_queryset_for(user):
         Goal.objects.filter(
             Q(owner=user) | Q(memberships__user=user),
         )
-        .select_related('owner')
+        .select_related('owner', 'category')
         .prefetch_related(
             Prefetch(
                 'memberships',
@@ -65,7 +65,9 @@ class GoalListCreateView(APIView):
         if status_filter:
             goals = goals.filter(status=status_filter)
         if category:
-            goals = goals.filter(category__iexact=category)
+            goals = goals.filter(
+                Q(category__slug__iexact=category) | Q(category__name__iexact=category)
+            )
         if search:
             goals = goals.filter(
                 Q(title__icontains=search) | Q(description__icontains=search)

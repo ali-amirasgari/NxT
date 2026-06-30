@@ -59,13 +59,6 @@ const navigationItems = [
     showOnMobile: true,
   },
   {
-    href: "/app/leaderboard",
-    labelKey: "leaderboard",
-    desktopIcon: "solar:cup-star-linear",
-    mobileIcon: "solar:cup-star-linear",
-    showOnMobile: false,
-  },
-  {
     href: "/app/profile",
     labelKey: "profile",
     desktopIcon: "solar:user-rounded-linear",

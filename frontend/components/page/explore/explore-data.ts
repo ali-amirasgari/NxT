@@ -1,9 +1,13 @@
-export type ExploreCategory = "for-you" | "fitness" | "coding" | "proof";
+import type { Goal } from "@/apis/types/goal";
+import type { Post } from "@/apis/types/social";
+import type { User } from "@/apis/types/user";
+
+export type ExploreCategory = string;
 
 export type ExploreTile = {
   id: string;
   label: string;
-  category: Exclude<ExploreCategory, "for-you">;
+  category: string;
   media: "image" | "video";
   tone: "primary" | "secondary" | "muted" | "card";
   size: "large" | "small" | "wide";
@@ -11,158 +15,72 @@ export type ExploreTile = {
   hasCaption?: boolean;
 };
 
-export const exploreTiles: ExploreTile[] = [
-  {
-    id: "morning-run",
-    label: "Morning run proof",
-    category: "fitness",
-    media: "video",
-    tone: "primary",
-    size: "large",
-    href: "/app/posts/morning-run?from=explore",
-    hasCaption: true,
-  },
-  {
-    id: "reading-session",
-    label: "Reading session proof",
-    category: "proof",
-    media: "image",
-    tone: "secondary",
-    size: "small",
-    href: "/app/posts/reading-session?from=explore",
-  },
-  {
-    id: "portfolio-progress",
-    label: "Portfolio progress",
-    category: "coding",
-    media: "image",
-    tone: "secondary",
-    size: "small",
-    href: "/app/posts/portfolio-progress?from=explore",
-  },
-  {
-    id: "focus-goal",
-    label: "Build in public goal",
-    category: "coding",
-    media: "video",
-    tone: "muted",
-    size: "wide",
-    href: "/app/goals/focus?from=explore",
-    hasCaption: true,
-  },
-  {
-    id: "fitness-proof",
-    label: "Fitness photo proof",
-    category: "fitness",
-    media: "image",
-    tone: "card",
-    size: "small",
-    href: "/app/posts/morning-run?from=explore",
-  },
-  {
-    id: "coding-proof",
-    label: "Coding photo proof",
-    category: "coding",
-    media: "image",
-    tone: "primary",
-    size: "small",
-    href: "/app/posts/portfolio-progress?from=explore",
-  },
-  {
-    id: "reading-goal",
-    label: "Daily reading goal",
-    category: "proof",
-    media: "video",
-    tone: "secondary",
-    size: "large",
-    href: "/app/goals/reading?from=explore",
-    hasCaption: true,
-  },
-  {
-    id: "fitness-goal",
-    label: "Morning run club",
-    category: "fitness",
-    media: "image",
-    tone: "secondary",
-    size: "wide",
-    href: "/app/goals/fitness?from=explore",
-  },
-  {
-    id: "focus-session",
-    label: "Deep focus proof",
-    category: "proof",
-    media: "image",
-    tone: "muted",
-    size: "small",
-    href: "/app/posts/portfolio-progress?from=explore",
-  },
-  {
-    id: "run-update",
-    label: "Run update",
-    category: "fitness",
-    media: "video",
-    tone: "card",
-    size: "small",
-    href: "/app/posts/morning-run?from=explore",
-    hasCaption: true,
-  },
-];
-
 export type ExploreSearchResult = {
   id: string;
-  type: "account" | "goal" | "tag";
+  type: "account" | "goal" | "tag" | "post";
   title: string;
   description: string;
   iconText: string;
   href: string;
 };
 
-export const exploreSearchResults: ExploreSearchResult[] = [
-  {
-    id: "alex-levels-up",
-    type: "account",
-    title: "alex_levels_up",
-    description: "Account · 1.2k points",
-    iconText: "A",
-    href: "/app/users/alex-carter?from=explore",
-  },
-  {
-    id: "focus-sprint",
-    type: "goal",
-    title: "30-Day Focus Sprint",
-    description: "Goal · group challenge",
-    iconText: "3",
-    href: "/app/goals/focus?from=explore",
-  },
-  {
-    id: "fitness-tag",
-    type: "tag",
-    title: "#fitness",
-    description: "Tag · trending",
-    iconText: "#",
-    href: "/app/explore/search?q=fitness&type=tags",
-  },
-  {
-    id: "coding-tag",
-    type: "tag",
-    title: "#coding",
-    description: "Tag · trending",
-    iconText: "#",
-    href: "/app/explore/search?q=coding&type=tags",
-  },
-];
+function categoryFromPost(post: Post): string {
+  return post.category?.name ?? post.goal?.category?.name ?? "";
+}
 
-export const suggestedExploreGoals = [
-  {
-    id: "fitness",
-    title: "Morning run club",
-    meta: "Group · 80 pts each",
-    progress: 64,
-  },
-  {
-    id: "focus",
-    title: "Build in public",
-    meta: "Active · coding",
-    progress: 64,
-  },
-] as const;
+function tileSize(index: number): ExploreTile["size"] {
+  if (index % 7 === 0) return "large";
+  if (index % 5 === 0) return "wide";
+  return "small";
+}
+
+export function postToExploreTile(post: Post, index: number): ExploreTile {
+  return {
+    id: `post-${post.id}`,
+    label: post.title,
+    category: categoryFromPost(post),
+    media: post.media_type === "video" ? "video" : "image",
+    tone: post.media_tone,
+    size: tileSize(index),
+    href: `/app/posts/${post.id}?from=explore`,
+    hasCaption: Boolean(post.caption),
+  };
+}
+
+export function postToExploreSearchResult(post: Post): ExploreSearchResult {
+  const authorName =
+    post.author.display_name || post.author.username || `User ${post.author_id}`;
+
+  return {
+    id: `post-${post.id}`,
+    type: "post",
+    title: post.title,
+    description: `Post · ${post.category?.name || post.goal?.category?.name || authorName}`,
+    iconText: authorName.charAt(0).toUpperCase(),
+    href: `/app/posts/${post.id}?from=explore`,
+  };
+}
+
+export function goalToExploreSearchResult(goal: Goal): ExploreSearchResult {
+  return {
+    id: `goal-${goal.id}`,
+    type: "goal",
+    title: goal.title,
+    description: `Goal · ${goal.category?.name || goal.status}`,
+    iconText: String(goal.progress || goal.id).charAt(0),
+    href: `/app/goals/${goal.id}?from=explore`,
+  };
+}
+
+export function userToExploreSearchResult(user: User): ExploreSearchResult {
+  const displayName = user.display_name || user.username || user.email;
+
+  return {
+    id: `user-${user.id}`,
+    type: "account",
+    title: user.username,
+    description: `Account · ${displayName}`,
+    iconText: displayName.charAt(0).toUpperCase(),
+    href: `/app/users/${user.id}?from=explore`,
+  };
+}

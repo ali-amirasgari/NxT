@@ -1,3 +1,4 @@
+import type { Category } from "@/apis/types/category";
 import type { User } from "@/apis/types/user";
 
 export type GoalMemberRole = "owner" | "admin" | "member";
@@ -17,7 +18,8 @@ export type Goal = {
   owner: User;
   title: string;
   description: string;
-  category: string;
+  category_id?: number | null;
+  category?: Category | null;
   goal_type: GoalType;
   status: GoalStatus;
   progress: number;
@@ -40,7 +42,7 @@ export type GoalMemberInput = {
 export type GoalPayload = Partial<{
   title: string;
   description: string;
-  category: string;
+  category_id: number | null;
   goal_type: GoalType;
   status: GoalStatus;
   progress: number;

@@ -6,6 +6,8 @@ from django.db import models
 from goals.models import Goal
 from users.models.base import TimestampedModel
 
+from social.models.category import Category
+
 
 class Post(TimestampedModel):
     class MediaType(models.TextChoices):
@@ -36,6 +38,13 @@ class Post(TimestampedModel):
         blank=True,
         related_name='posts',
     )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='posts',
+    )
     title = models.CharField(max_length=160)
     caption = models.TextField(blank=True)
     media_url = models.URLField(max_length=500, blank=True)
@@ -61,6 +70,7 @@ class Post(TimestampedModel):
         indexes = (
             models.Index(fields=('author', '-created_at'), name='post_author_created_idx'),
             models.Index(fields=('goal', '-created_at'), name='post_goal_created_idx'),
+            models.Index(fields=('category', '-created_at'), name='post_category_created_idx'),
             models.Index(fields=('visibility', '-created_at'), name='post_visibility_idx'),
         )
 

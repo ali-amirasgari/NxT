@@ -40,7 +40,7 @@ def visible_post_filter(user):
 def post_queryset_for(user):
     return (
         Post.objects.filter(visible_post_filter(user))
-        .select_related('author', 'goal')
+        .select_related('author', 'goal', 'goal__category', 'category')
         .annotate(
             likes_count=Count('likes', distinct=True),
             comments_count=Count('comments', distinct=True),
@@ -339,7 +339,12 @@ class ExploreView(APIView):
         category = request.query_params.get('category', '').strip()
         posts = post_queryset_for(request.user).filter(visibility=Post.Visibility.PUBLIC)
         if category and category != 'for-you':
-            posts = posts.filter(Q(goal__category__iexact=category) | Q(title__icontains=category))
+            posts = posts.filter(
+                Q(category__slug__iexact=category)
+                | Q(category__name__iexact=category)
+                | Q(goal__category__slug__iexact=category)
+                | Q(goal__category__name__iexact=category)
+            )
         return Response(PostListEnvelopeSerializer({'posts': posts[:60]}, context={'request': request}).data)
 
 
@@ -364,5 +369,7 @@ class ExploreSearchView(APIView):
                 | Q(author__username__icontains=query)
                 | Q(author__display_name__icontains=query)
                 | Q(goal__title__icontains=query)
+                | Q(category__name__icontains=query)
+                | Q(goal__category__name__icontains=query)
             )
         return Response(PostListEnvelopeSerializer({'posts': posts[:50]}, context={'request': request}).data)

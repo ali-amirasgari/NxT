@@ -1,14 +1,24 @@
 from django.contrib import admin
 
-from .models import Comment, CommentLike, Post, PostLike, PostSave, PostShare
+from .models import Category, Comment, CommentLike, Post, PostLike, PostSave, PostShare
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'slug', 'order', 'is_active', 'created_at')
+    list_filter = ('is_active',)
+    search_fields = ('name', 'slug')
+    prepopulated_fields = {'slug': ('name',)}
+    ordering = ('order', 'name')
+    readonly_fields = ('created_at', 'updated_at')
 
 
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
-    list_display = ('title', 'author', 'goal', 'visibility', 'media_type', 'created_at')
-    list_filter = ('visibility', 'media_type', 'media_tone')
+    list_display = ('title', 'author', 'goal', 'category', 'visibility', 'media_type', 'created_at')
+    list_filter = ('visibility', 'media_type', 'media_tone', 'category')
     search_fields = ('title', 'caption', 'author__username', 'author__email')
-    autocomplete_fields = ('author', 'goal')
+    autocomplete_fields = ('author', 'goal', 'category')
     readonly_fields = ('created_at', 'updated_at')
 
 

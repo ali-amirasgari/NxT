@@ -11,8 +11,10 @@ import {
   getExplore,
   getFeed,
   getPost,
+  getSuggested,
   likeComment,
   likePost,
+  listCategories,
   listComments,
   listPosts,
   savePost,
@@ -23,6 +25,7 @@ import {
   unsavePost,
   updatePost,
 } from "@/apis/queries/social/functions";
+import type { SuggestedParams } from "@/apis/types/category";
 import type { CommentPayload, Post, PostListParams, PostPayload, SharePayload } from "@/apis/types/social";
 
 export const usePostsQuery = (params?: PostListParams) =>
@@ -164,4 +167,17 @@ export const useExploreSearchQuery = (params?: Record<string, unknown>) =>
   useQuery({
     queryKey: QUERY_KEYS.social.exploreSearch(params),
     queryFn: () => searchExplore(params),
+  });
+
+export const useCategoriesQuery = () =>
+  useQuery({
+    queryKey: QUERY_KEYS.social.categories,
+    queryFn: listCategories,
+    staleTime: 5 * 60 * 1000,
+  });
+
+export const useSuggestedQuery = (params?: SuggestedParams) =>
+  useQuery({
+    queryKey: QUERY_KEYS.social.suggested(params),
+    queryFn: () => getSuggested(params),
   });

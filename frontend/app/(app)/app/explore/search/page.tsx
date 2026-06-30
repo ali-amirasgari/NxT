@@ -5,9 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Suspense, useMemo, useState } from "react";
 
+import { useGoalsQuery } from "@/apis/queries/goals/queries";
+import { useExploreSearchQuery } from "@/apis/queries/social/queries";
+import { useUsersSearchQuery } from "@/apis/queries/users/queries";
 import {
-  exploreSearchResults,
-  suggestedExploreGoals,
+  goalToExploreSearchResult,
+  postToExploreSearchResult,
+  userToExploreSearchResult,
 } from "@/components/page/explore/explore-data";
 import { ExploreFilterChips } from "@/components/page/explore/explore-filter-chips";
 import { ExploreSearchField } from "@/components/page/explore/explore-search-field";
@@ -16,7 +20,7 @@ import { GoalCard } from "@/components/global/goal-card";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
 
-type SearchType = "all" | "accounts" | "goals" | "tags";
+type SearchType = "all" | "posts" | "accounts" | "goals" | "tags";
 
 function ExploreSearchContent() {
   const t = useTranslations("app.exploreSearch");
@@ -26,35 +30,53 @@ function ExploreSearchContent() {
   const [query, setQuery] = useState(initialQuery);
   const requestedType = searchParams.get("type");
   const [type, setType] = useState<SearchType>(
-    requestedType === "accounts" ||
+    requestedType === "posts" ||
+      requestedType === "accounts" ||
       requestedType === "goals" ||
       requestedType === "tags"
       ? requestedType
       : "all",
   );
+  const searchQuery = useExploreSearchQuery({
+    q: query.trim(),
+    type,
+  });
+  const goalsQuery = useGoalsQuery({
+    status: "active",
+    search: query.trim(),
+  });
+  const usersQuery = useUsersSearchQuery({ search: query.trim() });
   const filters = [
     { value: "all", label: t("filters.all") },
+    { value: "posts", label: t("filters.posts") },
     { value: "accounts", label: t("filters.accounts") },
     { value: "goals", label: t("filters.goals") },
     { value: "tags", label: t("filters.tags") },
   ] as const;
-  const results = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    return exploreSearchResults.filter((result) => {
-      const matchesType =
-        type === "all" ||
-        (type === "accounts" && result.type === "account") ||
-        (type === "goals" && result.type === "goal") ||
-        (type === "tags" && result.type === "tag");
-      const matchesQuery =
-        !normalizedQuery ||
-        result.title.toLowerCase().includes(normalizedQuery) ||
-        result.description.toLowerCase().includes(normalizedQuery);
-
-      return matchesType && matchesQuery;
-    });
-  }, [query, type]);
+  const results = useMemo(
+    () => [
+      ...(type === "all" || type === "posts"
+        ? (searchQuery.data ?? []).map(postToExploreSearchResult)
+        : []),
+      ...(type === "all" || type === "goals"
+        ? (goalsQuery.data ?? []).map(goalToExploreSearchResult)
+        : []),
+      ...(type === "all" || type === "accounts"
+        ? (usersQuery.data ?? []).map(userToExploreSearchResult)
+        : []),
+    ],
+    [goalsQuery.data, searchQuery.data, type, usersQuery.data],
+  );
+  const suggestedGoals = useMemo(
+    () =>
+      (goalsQuery.data ?? []).slice(0, 4).map((goal) => ({
+        id: goal.id,
+        title: goal.title,
+        meta: goal.category?.name ?? goal.schedule_label,
+        progress: goal.progress,
+      })),
+    [goalsQuery.data],
+  );
 
   return (
     <section className="mx-auto w-full max-w-[390px] px-1 md:max-w-3xl">
@@ -100,27 +122,31 @@ function ExploreSearchContent() {
         <ExploreSearchResults
           results={results}
           emptyTitle={t("emptyTitle")}
-          emptyDescription={t("emptyDescription")}
+          emptyDescription={
+            searchQuery.isLoading ? t("loading") : t("emptyDescription")
+          }
         />
       </div>
 
-      <div className="mt-11">
-        <Typography as="h2" className="mb-4 border-0 pb-0 text-base font-bold">
-          {t("suggestedTitle")}
-        </Typography>
-        <div className="grid gap-[18px] md:grid-cols-2">
-          {suggestedExploreGoals.map((goal) => (
-            <GoalCard
-              key={goal.id}
-              href={`/app/goals/${goal.id}?from=explore`}
-              title={goal.title}
-              meta={goal.meta}
-              progress={goal.progress}
-              progressLabel={t("progress")}
-            />
-          ))}
+      {suggestedGoals.length > 0 ? (
+        <div className="mt-11">
+          <Typography as="h2" className="mb-4 border-0 pb-0 text-base font-bold">
+            {t("suggestedTitle")}
+          </Typography>
+          <div className="grid gap-[18px] md:grid-cols-2">
+            {suggestedGoals.map((goal) => (
+              <GoalCard
+                key={goal.id}
+                href={`/app/goals/${goal.id}?from=explore`}
+                title={goal.title}
+                meta={goal.meta}
+                progress={goal.progress}
+                progressLabel={t("progress")}
+              />
+            ))}
+          </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }

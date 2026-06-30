@@ -3,48 +3,94 @@
 import { Icon } from "@iconify/react";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-import type { PostRecord } from "@/components/global/app-data";
+import {
+  useCreatePostMutation,
+  useUpdatePostMutation,
+  useCategoriesQuery,
+} from "@/apis/queries/social/queries";
+import type { Post, PostPayload } from "@/apis/types/social";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { Typography } from "@/components/ui/typography";
-import { savePost } from "@/lib/content-storage";
 
 export function PostForm({
   initialPost,
+  goalId,
   goalTitle,
   labels,
 }: {
-  initialPost?: PostRecord;
+  initialPost?: Post;
+  goalId?: number;
   goalTitle?: string;
   labels: Record<string, string>;
 }) {
   const router = useRouter();
+  const createPost = useCreatePostMutation();
+  const updatePost = useUpdatePostMutation(initialPost?.id ?? 0);
+  const { data: categories = [] } = useCategoriesQuery();
+
   const [title, setTitle] = useState(initialPost?.title ?? "");
   const [caption, setCaption] = useState(initialPost?.caption ?? "");
   const [fileName, setFileName] = useState("");
+  const [categoryId, setCategoryId] = useState<number | null>(
+    initialPost?.category?.id ?? initialPost?.category_id ?? null,
+  );
+  const [categoryOpen, setCategoryOpen] = useState(false);
+
+  const selectedCategory = categories.find((item) => item.id === categoryId);
+  const isPending = createPost.isPending || updatePost.isPending;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const saved = savePost({
-      id: initialPost?.id,
-      author: initialPost?.author ?? "Alex Carter",
-      authorInitial: initialPost?.authorInitial ?? "A",
-      meta: goalTitle
-        ? `${goalTitle} · proof update`
-        : (initialPost?.meta ?? "Goal update · proof"),
-      title: title.trim(),
-      caption: caption.trim() || labels.defaultCaption,
-      likes: initialPost?.likes ?? "0 likes",
-      comments: initialPost?.comments ?? "View all 0 comments",
-      timestamp: initialPost?.timestamp ?? "Just now",
-      mediaTone: initialPost?.mediaTone ?? "primary",
-    });
 
-    router.push(`/app/posts/${saved.id}`);
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) return;
+
+    // TODO: media upload is not wired to a backend yet — media_url stays empty.
+    const payload: PostPayload = {
+      title: trimmedTitle,
+      caption: caption.trim(),
+      category_id: categoryId,
+      visibility: initialPost?.visibility ?? "public",
+      media_type: initialPost?.media_type ?? "none",
+      media_tone: initialPost?.media_tone ?? "primary",
+    };
+
+    if (!initialPost && goalId) {
+      payload.goal_id = goalId;
+    }
+
+    const onError = () => toast.error(labels.error);
+
+    if (initialPost) {
+      updatePost.mutate(payload, {
+        onSuccess: (post) => router.push(`/app/posts/${post.id}`),
+        onError,
+      });
+    } else {
+      createPost.mutate(payload, {
+        onSuccess: (post) => router.push(`/app/posts/${post.id}`),
+        onError,
+      });
+    }
   }
 
   return (
@@ -104,6 +150,64 @@ export function PostForm({
       </Label>
 
       <div className="space-y-2">
+        <Label>{labels.category}</Label>
+        <Popover open={categoryOpen} onOpenChange={setCategoryOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              tone="neutral"
+              className="h-11 w-full justify-between rounded-2xl bg-card px-3.5"
+            >
+              <span className="flex items-center gap-2">
+                <Icon
+                  icon="solar:tag-linear"
+                  className="size-4 text-primary"
+                  aria-hidden="true"
+                />
+                {selectedCategory?.name ?? labels.categoryPlaceholder}
+              </span>
+              <Icon
+                icon="solar:alt-arrow-down-linear"
+                className="size-4 text-muted-foreground"
+                aria-hidden="true"
+              />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-[358px] rounded-2xl p-1">
+            <Command>
+              <CommandInput placeholder={labels.categorySearch} />
+              <CommandList>
+                <CommandEmpty>{labels.noCategory}</CommandEmpty>
+                <CommandGroup>
+                  {categories.map((item) => (
+                    <CommandItem
+                      key={item.id}
+                      value={item.name}
+                      onSelect={() => {
+                        setCategoryId((current) =>
+                          current === item.id ? null : item.id,
+                        );
+                        setCategoryOpen(false);
+                      }}
+                      data-checked={categoryId === item.id}
+                    >
+                      <Icon
+                        icon="solar:tag-linear"
+                        className="size-4 text-primary"
+                        aria-hidden="true"
+                      />
+                      {item.name}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className="space-y-2">
         <Label htmlFor="post-caption">{labels.note}</Label>
         <Textarea
           id="post-caption"
@@ -116,7 +220,7 @@ export function PostForm({
 
       <Button
         type="submit"
-        disabled={!title.trim()}
+        disabled={!title.trim() || isPending}
         className="h-12 w-full rounded-2xl font-bold"
       >
         <Icon icon="solar:verified-check-bold" className="size-5" aria-hidden="true" />

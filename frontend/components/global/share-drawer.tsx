@@ -1,12 +1,9 @@
 "use client";
 
 import { Icon } from "@iconify/react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
-import {
-  shareContacts,
-  type ShareContact,
-} from "@/components/global/detail-social-data";
+import { useUsersSearchQuery } from "@/apis/queries/users/queries";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,13 +19,7 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Typography } from "@/components/ui/typography";
-import { cn } from "@/lib/utils";
-
-const avatarTones: Record<ShareContact["tone"], string> = {
-  green: "bg-emerald-400 text-white",
-  orange: "bg-orange-500 text-white",
-  violet: "bg-violet-500 text-white",
-};
+import { resolveDisplayName, userInitial } from "@/lib/user-display";
 
 type ShareDrawerProps = {
   open: boolean;
@@ -42,6 +33,9 @@ type ShareDrawerProps = {
     sent: string;
     copy: string;
     copied: string;
+    prompt: string;
+    loading: string;
+    empty: string;
   };
 };
 
@@ -52,18 +46,15 @@ export function ShareDrawer({
   labels,
 }: ShareDrawerProps) {
   const [query, setQuery] = useState("");
-  const [sentIds, setSentIds] = useState<string[]>([]);
+  const [sentIds, setSentIds] = useState<number[]>([]);
   const [announcement, setAnnouncement] = useState("");
-  const contacts = useMemo(() => {
-    const normalized = query.trim().toLowerCase();
-    return normalized
-      ? shareContacts.filter(
-          (contact) =>
-            contact.name.toLowerCase().includes(normalized) ||
-            contact.meta.toLowerCase().includes(normalized),
-        )
-      : shareContacts;
-  }, [query]);
+
+  const search = query.trim();
+  const usersQuery = useUsersSearchQuery({ search });
+  const users = usersQuery.data ?? [];
+  const hasSearch = search.length > 0;
+  const isLoading = hasSearch && usersQuery.isLoading;
+  const isEmpty = hasSearch && !isLoading && users.length === 0;
 
   async function handleCopyLink() {
     const url = new URL(shareUrl, window.location.origin).toString();
@@ -107,53 +98,81 @@ export function ShareDrawer({
             />
           </InputGroup>
 
-          <div className="mt-4 space-y-2.5">
-            {contacts.map((contact) => {
-              const sent = sentIds.includes(contact.id);
+          <div className="mt-4 min-h-[120px] space-y-2.5">
+            {!hasSearch ? (
+              <Typography
+                as="p"
+                variant="muted"
+                className="py-6 text-center text-sm"
+              >
+                {labels.prompt}
+              </Typography>
+            ) : null}
 
-              return (
-                <div key={contact.id} className="flex items-center gap-3">
-                  <Avatar className="size-[42px]">
-                    <AvatarFallback
-                      className={cn(
-                        "text-[13px] font-bold",
-                        avatarTones[contact.tone],
-                      )}
-                    >
-                      {contact.initial}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <Typography
-                      as="p"
-                      className="truncate text-[15px] font-semibold"
-                    >
-                      {contact.name}
-                    </Typography>
-                    <Typography
-                      as="p"
-                      variant="muted"
-                      className="truncate text-xs"
-                    >
-                      {contact.meta}
-                    </Typography>
-                  </div>
-                  <Button
-                    type="button"
-                    size="sm"
-                    tone={sent ? "neutral" : "primary"}
-                    disabled={sent}
-                    className="h-7 min-w-14 rounded-full px-3 text-[11px] font-bold"
-                    onClick={() => {
-                      setSentIds((current) => [...current, contact.id]);
-                      setAnnouncement(`${labels.sent} ${contact.name}`);
-                    }}
-                  >
-                    {sent ? labels.sent : labels.send}
-                  </Button>
-                </div>
-              );
-            })}
+            {isLoading ? (
+              <Typography
+                as="p"
+                variant="muted"
+                className="py-6 text-center text-sm"
+              >
+                {labels.loading}
+              </Typography>
+            ) : null}
+
+            {isEmpty ? (
+              <Typography
+                as="p"
+                variant="muted"
+                className="py-6 text-center text-sm"
+              >
+                {labels.empty}
+              </Typography>
+            ) : null}
+
+            {hasSearch && !isLoading && users.length > 0
+              ? users.map((user) => {
+                  const sent = sentIds.includes(user.id);
+                  const name = resolveDisplayName(user);
+
+                  return (
+                    <div key={user.id} className="flex items-center gap-3">
+                      <Avatar className="size-[42px]">
+                        <AvatarFallback className="bg-primary text-[13px] font-bold text-primary-foreground">
+                          {userInitial(user)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <Typography
+                          as="p"
+                          className="truncate text-[15px] font-semibold"
+                        >
+                          {name}
+                        </Typography>
+                        <Typography
+                          as="p"
+                          variant="muted"
+                          className="truncate text-xs"
+                        >
+                          {`@${user.username}`}
+                        </Typography>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        tone={sent ? "neutral" : "primary"}
+                        disabled={sent}
+                        className="h-7 min-w-14 rounded-full px-3 text-[11px] font-bold"
+                        onClick={() => {
+                          setSentIds((current) => [...current, user.id]);
+                          setAnnouncement(`${labels.sent} ${name}`);
+                        }}
+                      >
+                        {sent ? labels.sent : labels.send}
+                      </Button>
+                    </div>
+                  );
+                })
+              : null}
           </div>
 
           <Button

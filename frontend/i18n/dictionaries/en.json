@@ -127,7 +127,6 @@
       "explore": "Explore",
       "goals": "Goals",
       "chats": "Chats",
-      "leaderboard": "Leaderboard",
       "profile": "Profile",
       "createGoal": "Create goal"
     },
@@ -137,6 +136,14 @@
       "searchLabel": "Search Explore",
       "searchPlaceholder": "Search goals or people",
       "creators": "People to follow",
+      "loading": "Loading explore...",
+      "loadError": "Couldn't load explore.",
+      "retry": "Try again",
+      "empty": "Nothing to explore yet.",
+      "suggestedTitle": "Suggested for you",
+      "suggestedPosts": "Posts",
+      "suggestedGoals": "Goals",
+      "suggestedEmpty": "No suggestions yet.",
       "filters": {
         "forYou": "For you",
         "fitness": "Fitness",
@@ -189,9 +196,11 @@
       "suggestedTitle": "Suggested goals",
       "emptyTitle": "No results found",
       "emptyDescription": "Try a different name, goal, or tag.",
+      "loading": "Searching...",
       "progress": "Progress",
       "filters": {
         "all": "All",
+        "posts": "Posts",
         "accounts": "Accounts",
         "goals": "Goals",
         "tags": "Tags"
@@ -219,7 +228,10 @@
       "summaryCompletedValue": "7",
       "summaryCompletedLabel": "Proofs submitted",
       "summaryStreakValue": "5d",
-      "summaryStreakLabel": "Current streak"
+      "summaryStreakLabel": "Current streak",
+      "empty": "No active goals yet. Create one to get started.",
+      "loadError": "Couldn't load your goals.",
+      "retry": "Try again"
     },
     "profile": {
       "openSettings": "Open settings",
@@ -232,7 +244,9 @@
       "followers": "Followers",
       "following": "Following",
       "loadError": "Couldn't load your profile.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "emptyGoals": "No goals yet.",
+      "emptyShared": "No posts yet."
     },
     "profileSettings": {
       "title": "Settings",
@@ -264,7 +278,10 @@
     "goals": {
       "title": "Goals",
       "description": "Open a goal to review progress, stake, schedule, and proof activity.",
-      "progress": "Progress"
+      "progress": "Progress",
+      "empty": "No goals yet. Create your first goal.",
+      "loadError": "Couldn't load your goals.",
+      "retry": "Try again"
     },
     "create": {
       "back": "Go back",
@@ -283,6 +300,7 @@
       "description": "Description",
       "descriptionPlaceholder": "Add a clear description",
       "category": "Category",
+      "categoryPlaceholder": "Select a category",
       "categorySearch": "Search category...",
       "noCategory": "No category found",
       "stake": "Point stake",
@@ -304,7 +322,9 @@
       "stakeReminder": "Complete the proof to protect your point stake.",
       "submitPost": "Submit Proof",
       "savePost": "Save Post",
-      "defaultCaption": "Proof submitted."
+      "defaultCaption": "Proof submitted.",
+      "notFound": "This content was not found.",
+      "error": "Something went wrong. Please try again."
     },
     "contentActions": {
       "title": "Options",
@@ -332,7 +352,13 @@
       "like": "Like",
       "comment": "Comment",
       "share": "Share",
-      "submitProof": "Submit proof"
+      "submitProof": "Submit proof",
+      "notFound": "This content was not found.",
+      "likes": "{count} likes",
+      "comments": "View all {count} comments",
+      "points": "{count} pts",
+      "groupGoal": "Group goal",
+      "soloGoal": "Solo goal"
     },
     "comments": {
       "title": "Comments",
@@ -342,7 +368,10 @@
       "send": "Send comment",
       "reply": "Reply",
       "like": "Like",
-      "added": "Comment added"
+      "added": "Comment added",
+      "loading": "Loading comments...",
+      "empty": "No comments yet. Be the first to comment.",
+      "error": "Couldn't post your comment."
     },
     "chats": {
       "title": "Chats",
@@ -400,7 +429,10 @@
       "send": "Send",
       "sent": "Sent",
       "copy": "Copy link",
-      "copied": "Link copied"
+      "copied": "Link copied",
+      "prompt": "Search for someone to share with.",
+      "loading": "Searching...",
+      "empty": "No users found."
     }
   }
 }

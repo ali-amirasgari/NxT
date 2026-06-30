@@ -27,7 +27,13 @@ class Goal(TimestampedModel):
     )
     title = models.CharField(max_length=160)
     description = models.TextField(blank=True)
-    category = models.CharField(max_length=80, blank=True)
+    category = models.ForeignKey(
+        'social.Category',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='goals',
+    )
     goal_type = models.CharField(
         max_length=16,
         choices=GoalType.choices,

@@ -22,7 +22,7 @@ class GoalAdmin(admin.ModelAdmin):
     )
     list_filter = ('goal_type', 'status', 'category')
     search_fields = ('title', 'description', 'owner__username', 'owner__email')
-    autocomplete_fields = ('owner',)
+    autocomplete_fields = ('owner', 'category')
     readonly_fields = ('created_at', 'updated_at')
     inlines = (GoalMemberInline,)
 

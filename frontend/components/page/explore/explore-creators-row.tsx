@@ -1,17 +1,26 @@
+"use client";
+
 import Link from "next/link";
 
-import { publicUsers } from "@/components/global/users-data";
+import { useUsersListQuery } from "@/apis/queries/users/queries";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Typography } from "@/components/ui/typography";
+import { userInitial } from "@/lib/user-display";
 
 export function ExploreCreatorsRow({ label }: { label: string }) {
+  const { data: users } = useUsersListQuery();
+
+  if (!users || users.length === 0) {
+    return null;
+  }
+
   return (
     <div className="space-y-2">
       <Typography as="h2" variant="small" className="text-sm font-bold">
         {label}
       </Typography>
       <div className="flex gap-3 overflow-x-auto pb-1">
-        {publicUsers.map((user) => (
+        {users.map((user) => (
           <Link
             key={user.id}
             href={`/app/users/${user.id}?from=explore`}
@@ -19,7 +28,7 @@ export function ExploreCreatorsRow({ label }: { label: string }) {
           >
             <Avatar className="size-11 after:hidden">
               <AvatarFallback className="bg-primary text-sm font-bold text-primary-foreground">
-                {user.initial}
+                {userInitial(user)}
               </AvatarFallback>
             </Avatar>
             <Typography as="span" className="max-w-[72px] truncate text-xs font-semibold">

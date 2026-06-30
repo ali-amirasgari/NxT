@@ -8,6 +8,7 @@ import {
   followUser,
   getMe,
   getUser,
+  listUsers,
   searchUsers,
   unfollowUser,
   updateMe,
@@ -42,6 +43,14 @@ export function useUsersSearchQuery(params: SearchUsersParams) {
     queryFn: () => searchUsers({ ...params, search }),
     enabled: search.length > 0 || Boolean(params.ids),
     staleTime: 30_000,
+  });
+}
+
+export function useUsersListQuery(params?: SearchUsersParams) {
+  return useQuery<User[]>({
+    queryKey: QUERY_KEYS.users.list(params),
+    queryFn: () => listUsers(params),
+    staleTime: 60_000,
   });
 }
 

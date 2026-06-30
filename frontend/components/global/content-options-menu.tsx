@@ -6,7 +6,12 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 
-import type { GoalRecord } from "@/components/global/app-data";
+import {
+  useCreateGoalMutation,
+  useDeleteGoalMutation,
+} from "@/apis/queries/goals/queries";
+import { useDeletePostMutation } from "@/apis/queries/social/queries";
+import type { Goal } from "@/apis/types/goal";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -16,14 +21,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteGoal, deletePost, saveGoal } from "@/lib/content-storage";
 import { cn } from "@/lib/utils";
 
 type ContentOptionsMenuProps = {
   type: "goal" | "post";
   id: string;
   owner?: boolean;
-  goal?: GoalRecord;
+  goal?: Goal;
   onShare?: () => void;
   triggerClassName?: string;
 };
@@ -39,6 +43,9 @@ export function ContentOptionsMenu({
   const t = useTranslations("app.contentActions");
   const router = useRouter();
   const [following, setFollowing] = useState(false);
+  const deletePost = useDeletePostMutation();
+  const deleteGoal = useDeleteGoalMutation();
+  const createGoal = useCreateGoalMutation();
 
   function share() {
     if (onShare) {
@@ -51,31 +58,36 @@ export function ContentOptionsMenu({
   }
 
   function remove() {
-    if (type === "goal") {
-      deleteGoal(id);
-    } else {
-      deletePost(id);
-    }
+    const onSuccess = () => {
+      toast.success(t("deleted"));
+      router.push("/app/profile");
+    };
 
-    toast.success(t("deleted"));
-    router.push("/app/profile");
+    if (type === "goal") {
+      deleteGoal.mutate(id, { onSuccess });
+    } else {
+      deletePost.mutate(id, { onSuccess });
+    }
   }
 
   function copyGoal() {
     if (!goal) return;
 
-    const saved = saveGoal({
-      ...goal,
-      id: undefined,
-      author: "Alex Carter",
-      authorInitial: "A",
-      meta: "Added goal · active",
-      progress: 0,
-      likes: "0 likes",
-      comments: "View all 0 comments",
-    });
-    toast.success(t("goalAdded"));
-    router.push(`/app/goals/${saved.id}`);
+    createGoal.mutate(
+      {
+        title: goal.title,
+        description: goal.description,
+        category_id: goal.category?.id ?? goal.category_id ?? null,
+        goal_type: "solo",
+        stake_points: 0,
+      },
+      {
+        onSuccess: (created) => {
+          toast.success(t("goalAdded"));
+          router.push(`/app/goals/${created.id}`);
+        },
+      },
+    );
   }
 
   return (

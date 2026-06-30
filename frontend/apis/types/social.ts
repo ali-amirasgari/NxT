@@ -1,3 +1,4 @@
+import type { Category } from "@/apis/types/category";
 import type { User } from "@/apis/types/user";
 
 export type PostMediaType = "image" | "video" | "none";
@@ -7,7 +8,7 @@ export type PostVisibility = "public" | "followers" | "private";
 export type PostGoalSummary = {
   id: number;
   title: string;
-  category: string;
+  category?: Category | null;
 };
 
 export type Post = {
@@ -16,6 +17,8 @@ export type Post = {
   author: User;
   goal_id?: number | null;
   goal?: PostGoalSummary | null;
+  category_id?: number | null;
+  category?: Category | null;
   title: string;
   caption: string;
   media_url: string;
@@ -34,6 +37,7 @@ export type Post = {
 
 export type PostPayload = Partial<{
   goal_id: number | null;
+  category_id: number | null;
   title: string;
   caption: string;
   media_url: string;

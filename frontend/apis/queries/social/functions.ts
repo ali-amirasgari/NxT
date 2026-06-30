@@ -1,4 +1,6 @@
+import categoryService from "@/apis/services/categoryService";
 import socialService from "@/apis/services/socialService";
+import type { SuggestedParams } from "@/apis/types/category";
 import type { CommentPayload, PostListParams, PostPayload, SharePayload } from "@/apis/types/social";
 
 export const listPosts = (params?: PostListParams) => socialService.listPosts(params);
@@ -23,3 +25,5 @@ export const getFeed = () => socialService.feed();
 export const getExplore = (params?: Record<string, unknown>) => socialService.explore(params);
 export const searchExplore = (params?: Record<string, unknown>) =>
   socialService.exploreSearch(params);
+export const listCategories = () => categoryService.listCategories();
+export const getSuggested = (params?: SuggestedParams) => categoryService.getSuggested(params);

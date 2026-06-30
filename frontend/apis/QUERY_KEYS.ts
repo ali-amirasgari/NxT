@@ -7,6 +7,8 @@ export const QUERY_KEYS = {
   users: {
     all: ["users"],
     me: ["users", "me"],
+    list: (params?: Record<string, unknown>) =>
+      ["users", "list", params ?? {}] as const,
     detail: (userId: string | number) => ["users", "detail", String(userId)] as const,
     search: (params: Record<string, unknown>) =>
       ["users", "search", params] as const,
@@ -51,6 +53,9 @@ export const QUERY_KEYS = {
       ["social", "explore", params ?? {}] as const,
     exploreSearch: (params?: Record<string, unknown>) =>
       ["social", "explore-search", params ?? {}] as const,
+    categories: ["social", "categories"],
+    suggested: (params?: Record<string, unknown>) =>
+      ["social", "suggested", params ?? {}] as const,
   },
   chat: {
     conversations: {

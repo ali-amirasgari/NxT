@@ -3,9 +3,17 @@
 import { Icon } from "@iconify/react";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
-import type { GoalRecord } from "@/components/global/app-data";
-import { chats } from "@/components/page/chats/chat-data";
+import { useCategoriesQuery } from "@/apis/queries/social/queries";
+import {
+  useCreateGoalMutation,
+  useUpdateGoalMutation,
+} from "@/apis/queries/goals/queries";
+import { useUsersSearchQuery } from "@/apis/queries/users/queries";
+import type { Goal, GoalPayload } from "@/apis/types/goal";
+import type { User } from "@/apis/types/user";
+import { resolveDisplayName, userInitial } from "@/lib/user-display";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -25,7 +33,6 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Typography } from "@/components/ui/typography";
 import { cn } from "@/lib/utils";
-import { saveGoal } from "@/lib/content-storage";
 
 const colors = [
   "bg-primary",
@@ -36,83 +43,92 @@ const colors = [
   "bg-amber-400",
 ] as const;
 
-const categories = [
-  "Fitness",
-  "Coding",
-  "Learning",
-  "Mindfulness",
-  "Reading",
-  "Career",
-  "Finance",
-  "Nutrition",
-  "Creative",
-] as const;
-
 export function GoalForm({
   initialGoal,
   labels,
 }: {
-  initialGoal?: GoalRecord;
+  initialGoal?: Goal;
   labels: Record<string, string>;
 }) {
   const router = useRouter();
+  const createGoal = useCreateGoalMutation();
+  const updateGoal = useUpdateGoalMutation(initialGoal?.id ?? 0);
+  const { data: categories = [] } = useCategoriesQuery();
+
   const [type, setType] = useState<"solo" | "group">(
-    initialGoal?.category === "Group goal" ? "group" : "solo",
+    initialGoal?.goal_type ?? "solo",
   );
-  const [color, setColor] = useState(0);
+  const [color, setColor] = useState(() => {
+    const index = colors.indexOf(
+      (initialGoal?.cover_color ?? "") as (typeof colors)[number],
+    );
+    return index >= 0 ? index : 0;
+  });
   const [title, setTitle] = useState(initialGoal?.title ?? "");
   const [description, setDescription] = useState(
     initialGoal?.description ?? "",
   );
-  const [category, setCategory] = useState(
-    initialGoal?.category === "Group goal"
-      ? "Fitness"
-      : (initialGoal?.category ?? "Fitness"),
+  const [categoryId, setCategoryId] = useState<number | null>(
+    initialGoal?.category?.id ?? initialGoal?.category_id ?? null,
   );
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [stake, setStake] = useState(
-    initialGoal?.stake.replace(/\D/g, "") ?? "200",
+    String(initialGoal?.stake_points ?? 200),
   );
-  const [selectedUsers, setSelectedUsers] = useState<string[]>(
-    initialGoal?.category === "Group goal" ? ["nima-goals", "mina"] : [],
+  const [userSearch, setUserSearch] = useState("");
+  const [selectedUsers, setSelectedUsers] = useState<User[]>(() =>
+    (initialGoal?.members ?? [])
+      .filter((member) => member.role !== "owner")
+      .map((member) => member.user),
   );
 
-  function toggleUser(userId: string) {
+  const { data: userResults = [] } = useUsersSearchQuery({ search: userSearch });
+  const selectedCategory = categories.find((item) => item.id === categoryId);
+  const isPending = createGoal.isPending || updateGoal.isPending;
+
+  function toggleUser(user: User) {
     setSelectedUsers((current) =>
-      current.includes(userId)
-        ? current.filter((id) => id !== userId)
-        : [...current, userId],
+      current.some((item) => item.id === user.id)
+        ? current.filter((item) => item.id !== user.id)
+        : [...current, user],
     );
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const joinedCount = Math.max(selectedUsers.length + 1, 2);
-    const saved = saveGoal({
-      id: initialGoal?.id,
-      title: title.trim(),
-      description:
-        description.trim() ||
-        (type === "group"
-          ? "A shared goal created with your accountability team."
-          : "A personal goal focused on building consistent progress."),
-      category: type === "group" ? "Group goal" : category,
-      author: initialGoal?.author ?? "Alex Carter",
-      authorInitial: initialGoal?.authorInitial ?? "A",
-      meta:
-        type === "group"
-          ? `${joinedCount} joined · active`
-          : `Active goal · ${category.toLowerCase()}`,
-      progress: initialGoal?.progress ?? 0,
-      stake: `${stake || "0"} pts`,
-      schedule:
-        type === "group"
-          ? `${joinedCount} members · group goal`
-          : `${category} · newly created`,
-      likes: initialGoal?.likes ?? "0 likes",
-      comments: initialGoal?.comments ?? "View all 0 comments",
-    });
-    router.push(`/app/goals/${saved.id}`);
+
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) return;
+
+    const payload: GoalPayload = {
+      title: trimmedTitle,
+      description: description.trim(),
+      category_id: categoryId,
+      goal_type: type,
+      stake_points: Number.parseInt(stake, 10) || 0,
+      cover_color: colors[color],
+    };
+
+    if (type === "group") {
+      payload.members = selectedUsers.map((user) => ({
+        user_id: user.id,
+        role: "member",
+      }));
+    }
+
+    const onError = () => toast.error(labels.error);
+
+    if (initialGoal) {
+      updateGoal.mutate(payload, {
+        onSuccess: (goal) => router.push(`/app/goals/${goal.id}`),
+        onError,
+      });
+    } else {
+      createGoal.mutate(payload, {
+        onSuccess: (goal) => router.push(`/app/goals/${goal.id}`),
+        onError,
+      });
+    }
   }
 
   return (
@@ -210,7 +226,7 @@ export function GoalForm({
                   className="size-4 text-primary"
                   aria-hidden="true"
                 />
-                {category}
+                {selectedCategory?.name ?? labels.categoryPlaceholder}
               </span>
               <Icon
                 icon="solar:alt-arrow-down-linear"
@@ -227,20 +243,22 @@ export function GoalForm({
                 <CommandGroup>
                   {categories.map((item) => (
                     <CommandItem
-                      key={item}
-                      value={item}
+                      key={item.id}
+                      value={item.name}
                       onSelect={() => {
-                        setCategory(item);
+                        setCategoryId((current) =>
+                          current === item.id ? null : item.id,
+                        );
                         setCategoryOpen(false);
                       }}
-                      data-checked={category === item}
+                      data-checked={categoryId === item.id}
                     >
                       <Icon
                         icon="solar:tag-linear"
                         className="size-4 text-primary"
                         aria-hidden="true"
                       />
-                      {item}
+                      {item.name}
                     </CommandItem>
                   ))}
                 </CommandGroup>
@@ -286,35 +304,41 @@ export function GoalForm({
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="start" className="w-[358px] rounded-2xl p-1">
-                <Command>
-                  <CommandInput placeholder={labels.usersSearch} />
+                <Command shouldFilter={false}>
+                  <CommandInput
+                    placeholder={labels.usersSearch}
+                    value={userSearch}
+                    onValueChange={setUserSearch}
+                  />
                   <CommandList>
                     <CommandEmpty>{labels.noUsers}</CommandEmpty>
                     <CommandGroup>
-                      {chats.map((user) => (
+                      {userResults.map((user) => (
                         <CommandItem
                           key={user.id}
-                          value={`${user.name} ${user.id} ${user.status}`}
-                          onSelect={() => toggleUser(user.id)}
-                          data-checked={selectedUsers.includes(user.id)}
+                          value={String(user.id)}
+                          onSelect={() => toggleUser(user)}
+                          data-checked={selectedUsers.some(
+                            (item) => item.id === user.id,
+                          )}
                           className="py-2"
                         >
                           <span className="flex size-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                            {user.initial}
+                            {userInitial(user)}
                           </span>
                           <span className="min-w-0">
                             <Typography
                               as="span"
                               className="block truncate text-sm font-semibold"
                             >
-                              {user.name}
+                              {resolveDisplayName(user)}
                             </Typography>
                             <Typography
                               as="span"
                               variant="muted"
                               className="block truncate text-xs"
                             >
-                              @{user.id}
+                              @{user.username}
                             </Typography>
                           </span>
                         </CommandItem>
@@ -326,25 +350,20 @@ export function GoalForm({
             </Popover>
             {selectedUsers.length ? (
               <div className="flex flex-wrap gap-2">
-                {selectedUsers.map((userId) => {
-                  const user = chats.find((item) => item.id === userId);
-                  if (!user) return null;
-
-                  return (
-                    <Button
-                      key={user.id}
-                      type="button"
-                      size="sm"
-                      variant="secondary"
-                      tone="neutral"
-                      className="h-8 rounded-full"
-                      onClick={() => toggleUser(user.id)}
-                    >
-                      {user.name}
-                      <Icon icon="solar:close-circle-linear" className="size-4" />
-                    </Button>
-                  );
-                })}
+                {selectedUsers.map((user) => (
+                  <Button
+                    key={user.id}
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    tone="neutral"
+                    className="h-8 rounded-full"
+                    onClick={() => toggleUser(user)}
+                  >
+                    {resolveDisplayName(user)}
+                    <Icon icon="solar:close-circle-linear" className="size-4" />
+                  </Button>
+                ))}
               </div>
             ) : null}
           </div>
@@ -357,10 +376,18 @@ export function GoalForm({
 
       <Button
         type="submit"
-        disabled={!title.trim() || (type === "group" && !selectedUsers.length)}
+        disabled={
+          !title.trim() ||
+          isPending ||
+          (type === "group" && !selectedUsers.length)
+        }
         className="h-11 w-full rounded-[14px] font-bold text-white"
       >
-        {initialGoal ? labels.save : type === "group" ? labels.createGroup : labels.createSolo}
+        {initialGoal
+          ? labels.save
+          : type === "group"
+            ? labels.createGroup
+            : labels.createSolo}
       </Button>
     </form>
   );

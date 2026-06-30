@@ -58,6 +58,15 @@ class UserService extends BaseService {
     return response.data.users;
   }
 
+  async listUsers(params?: SearchUsersParams): Promise<User[]> {
+    const response = await this.getClient().get<UserListEnvelope>(
+      API_ROUTES.users.list,
+      { params: buildQueryParams({ ...params }) },
+    );
+
+    return response.data.users;
+  }
+
   async followUser(userId: string | number): Promise<FollowResult> {
     const response = await this.getClient().post<FollowResult>(
       API_ROUTES.users.follow(userId),

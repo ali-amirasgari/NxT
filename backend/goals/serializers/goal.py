@@ -6,6 +6,9 @@ from rest_framework import serializers
 
 from users.serializers import UserSerializer
 
+from social.models import Category
+from social.serializers.category import CategorySerializer
+
 from ..models import Goal, GoalMember
 
 User = get_user_model()
@@ -29,6 +32,8 @@ class GoalMemberSerializer(serializers.ModelSerializer):
 class GoalSerializer(serializers.ModelSerializer):
     owner = UserSerializer(read_only=True)
     owner_id = serializers.IntegerField(source='owner.id', read_only=True)
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.IntegerField(source='category.id', read_only=True, allow_null=True)
     members = serializers.SerializerMethodField()
     member_count = serializers.SerializerMethodField()
 
@@ -40,6 +45,7 @@ class GoalSerializer(serializers.ModelSerializer):
             'owner',
             'title',
             'description',
+            'category_id',
             'category',
             'goal_type',
             'status',
@@ -93,13 +99,14 @@ class GoalMemberInputSerializer(serializers.Serializer):
 
 class GoalCreateUpdateSerializer(serializers.ModelSerializer):
     members = GoalMemberInputSerializer(many=True, required=False)
+    category_id = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = Goal
         fields = (
             'title',
             'description',
-            'category',
+            'category_id',
             'goal_type',
             'status',
             'progress',
@@ -137,6 +144,16 @@ class GoalCreateUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({
                 'members': 'Solo goals cannot have additional members.'
             })
+
+        if 'category_id' in attrs:
+            category_id = attrs.pop('category_id')
+            if category_id:
+                try:
+                    attrs['category'] = Category.objects.get(id=category_id, is_active=True)
+                except Category.DoesNotExist:
+                    raise serializers.ValidationError({'category_id': 'Category not found.'})
+            else:
+                attrs['category'] = None
 
         return attrs
 

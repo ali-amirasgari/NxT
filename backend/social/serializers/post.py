@@ -5,10 +5,13 @@ from rest_framework import serializers
 from goals.models import Goal
 from users.serializers import UserSerializer
 
-from social.models import Comment, Post, PostShare
+from social.models import Category, Comment, Post, PostShare
+from social.serializers.category import CategorySerializer
 
 
 class GoalSummarySerializer(serializers.ModelSerializer):
+    category = CategorySerializer(read_only=True)
+
     class Meta:
         model = Goal
         fields = ('id', 'title', 'category')
@@ -20,6 +23,8 @@ class PostSerializer(serializers.ModelSerializer):
     author_id = serializers.IntegerField(source='author.id', read_only=True)
     goal = GoalSummarySerializer(read_only=True)
     goal_id = serializers.IntegerField(source='goal.id', read_only=True, allow_null=True)
+    category = CategorySerializer(read_only=True)
+    category_id = serializers.IntegerField(source='category.id', read_only=True, allow_null=True)
     likes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
     saves_count = serializers.SerializerMethodField()
@@ -35,6 +40,8 @@ class PostSerializer(serializers.ModelSerializer):
             'author',
             'goal_id',
             'goal',
+            'category_id',
+            'category',
             'title',
             'caption',
             'media_url',
@@ -73,11 +80,13 @@ class PostSerializer(serializers.ModelSerializer):
 
 class PostCreateUpdateSerializer(serializers.ModelSerializer):
     goal_id = serializers.IntegerField(required=False, allow_null=True)
+    category_id = serializers.IntegerField(required=False, allow_null=True)
 
     class Meta:
         model = Post
         fields = (
             'goal_id',
+            'category_id',
             'title',
             'caption',
             'media_url',
@@ -98,6 +107,15 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
                 attrs['goal'] = Goal.objects.get(id=goal_id)
             except Goal.DoesNotExist:
                 raise serializers.ValidationError({'goal_id': 'Goal not found.'})
+        if 'category_id' in attrs:
+            category_id = attrs.pop('category_id')
+            if category_id:
+                try:
+                    attrs['category'] = Category.objects.get(id=category_id, is_active=True)
+                except Category.DoesNotExist:
+                    raise serializers.ValidationError({'category_id': 'Category not found.'})
+            else:
+                attrs['category'] = None
         return attrs
 
 

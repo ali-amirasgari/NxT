@@ -2,11 +2,12 @@
 
 import { Icon } from "@iconify/react";
 import { FormEvent, useState } from "react";
+import { toast } from "sonner";
 
 import {
-  detailComments,
-  type DetailComment,
-} from "@/components/global/detail-social-data";
+  useCommentsQuery,
+  useCreateCommentMutation,
+} from "@/apis/queries/social/queries";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,17 +23,44 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { Typography } from "@/components/ui/typography";
-import { cn } from "@/lib/utils";
+import { resolveDisplayName, userInitial } from "@/lib/user-display";
 
-const avatarTones: Record<DetailComment["tone"], string> = {
-  green: "bg-emerald-400 text-white",
-  orange: "bg-orange-500 text-white",
-  violet: "bg-violet-500 text-white",
-};
+/** Short, locale-light relative time for comment timestamps. */
+function formatRelativeTime(value: string): string {
+  const then = new Date(value).getTime();
+
+  if (Number.isNaN(then)) {
+    return "";
+  }
+
+  const seconds = Math.max(0, Math.floor((Date.now() - then) / 1000));
+
+  if (seconds < 60) {
+    return "now";
+  }
+
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) {
+    return `${minutes}m`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    return `${hours}h`;
+  }
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) {
+    return `${days}d`;
+  }
+
+  return new Date(then).toLocaleDateString();
+}
 
 type CommentsDrawerProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  postId?: number;
   labels: {
     title: string;
     description: string;
@@ -42,39 +70,48 @@ type CommentsDrawerProps = {
     reply: string;
     like: string;
     added: string;
+    loading: string;
+    empty: string;
+    error: string;
   };
 };
 
 export function CommentsDrawer({
   open,
   onOpenChange,
+  postId,
   labels,
 }: CommentsDrawerProps) {
-  const [comments, setComments] = useState(detailComments);
   const [comment, setComment] = useState("");
   const [announcement, setAnnouncement] = useState("");
+
+  const commentsQuery = useCommentsQuery(postId);
+  const createComment = useCreateCommentMutation(postId ?? 0);
+
+  const comments = commentsQuery.data ?? [];
+  const isLoading = Boolean(postId) && commentsQuery.isLoading;
+  const isEmpty = !isLoading && comments.length === 0;
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const value = comment.trim();
 
-    if (!value) {
+    if (!value || !postId) {
       return;
     }
 
-    setComments((current) => [
-      ...current,
+    createComment.mutate(
+      { body: value },
       {
-        id: `comment-${current.length + 1}`,
-        author: "Alex Carter",
-        initial: "A",
-        text: value,
-        timestamp: "now",
-        tone: "orange",
+        onSuccess: () => {
+          setComment("");
+          setAnnouncement(labels.added);
+        },
+        onError: () => {
+          toast.error(labels.error);
+        },
       },
-    ]);
-    setComment("");
-    setAnnouncement(labels.added);
+    );
   }
 
   return (
@@ -95,61 +132,78 @@ export function CommentsDrawer({
         </DrawerHeader>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-24 pt-2">
-          <div className="space-y-5">
-            {comments.map((item) => (
-              <article key={item.id} className="flex gap-3">
-                <Avatar className="size-9">
-                  <AvatarFallback
-                    className={cn(
-                      "text-xs font-bold",
-                      avatarTones[item.tone],
-                    )}
-                  >
-                    {item.initial}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-3">
-                    <Typography as="h3" className="text-[13px] font-semibold">
-                      {item.author}
-                    </Typography>
+          {isLoading ? (
+            <Typography
+              as="p"
+              variant="muted"
+              className="py-10 text-center text-sm"
+            >
+              {labels.loading}
+            </Typography>
+          ) : null}
+
+          {isEmpty ? (
+            <Typography
+              as="p"
+              variant="muted"
+              className="py-10 text-center text-sm"
+            >
+              {labels.empty}
+            </Typography>
+          ) : null}
+
+          {!isLoading && comments.length > 0 ? (
+            <div className="space-y-5">
+              {comments.map((item) => (
+                <article key={item.id} className="flex gap-3">
+                  <Avatar className="size-9">
+                    <AvatarFallback className="bg-primary text-xs font-bold text-primary-foreground">
+                      {userInitial(item.author)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <Typography as="h3" className="text-[13px] font-semibold">
+                        {resolveDisplayName(item.author)}
+                      </Typography>
+                      <Typography
+                        as="span"
+                        variant="muted"
+                        className="text-[11px]"
+                      >
+                        {formatRelativeTime(item.created_at)}
+                      </Typography>
+                    </div>
                     <Typography
-                      as="span"
+                      as="p"
                       variant="muted"
-                      className="text-[11px]"
+                      className="mt-1 text-[13px] leading-[17px]"
                     >
-                      {item.timestamp}
+                      {item.body}
                     </Typography>
+                    <div className="mt-1.5 flex gap-3">
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="xs"
+                        className="h-auto p-0 text-[11px]"
+                      >
+                        {labels.reply}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="link"
+                        size="xs"
+                        className="h-auto p-0 text-[11px]"
+                      >
+                        {labels.like}
+                      </Button>
+                    </div>
                   </div>
-                  <Typography
-                    as="p"
-                    variant="muted"
-                    className="mt-1 text-[13px] leading-[17px]"
-                  >
-                    {item.text}
-                  </Typography>
-                  <div className="mt-1.5 flex gap-3">
-                    <Button
-                      type="button"
-                      variant="link"
-                      size="xs"
-                      className="h-auto p-0 text-[11px]"
-                    >
-                      {labels.reply}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="link"
-                      size="xs"
-                      className="h-auto p-0 text-[11px]"
-                    >
-                      {labels.like}
-                    </Button>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
         </div>
 
         <form
@@ -162,12 +216,13 @@ export function CommentsDrawer({
               onChange={(event) => setComment(event.target.value)}
               aria-label={labels.placeholder}
               placeholder={labels.placeholder}
+              disabled={!postId}
               className="px-4 text-sm"
             />
             <InputGroupButton
               type="submit"
               size="icon-sm"
-              disabled={!comment.trim()}
+              disabled={!comment.trim() || !postId || createComment.isPending}
               aria-label={labels.send}
               className="me-2 size-8 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
             >

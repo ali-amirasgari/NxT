@@ -145,7 +145,7 @@ export function PublicProfile({ user, labels }: PublicProfileProps) {
             </Button>
           ))}
         </div>
-        <ProfileMediaGrid tab={activeTab} readonly />
+        <ProfileMediaGrid tab={activeTab} readonly userId={user.id} />
       </div>
     </section>
   );

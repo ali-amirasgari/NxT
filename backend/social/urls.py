@@ -1,6 +1,7 @@
 from django.urls import re_path
 
 from .views import (
+    CategoryListView,
     CommentDetailView,
     CommentLikeView,
     ExploreSearchView,
@@ -12,6 +13,7 @@ from .views import (
     PostListCreateView,
     PostSaveView,
     PostShareView,
+    SuggestedView,
 )
 
 urlpatterns = [
@@ -37,4 +39,8 @@ urlpatterns = [
     re_path(r'^explore/$', ExploreView.as_view(), name='explore-list'),
     re_path(r'^explore/search$', ExploreSearchView.as_view(), name='explore-search-no-slash'),
     re_path(r'^explore/search/$', ExploreSearchView.as_view(), name='explore-search'),
+    re_path(r'^categories$', CategoryListView.as_view(), name='categories-list-no-slash'),
+    re_path(r'^categories/$', CategoryListView.as_view(), name='categories-list'),
+    re_path(r'^suggested$', SuggestedView.as_view(), name='suggested-list-no-slash'),
+    re_path(r'^suggested/$', SuggestedView.as_view(), name='suggested-list'),
 ]
