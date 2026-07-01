@@ -10,7 +10,7 @@ type WeeklySummaryProps = {
 
 export function WeeklySummary({ title, summary }: WeeklySummaryProps) {
   return (
-    <Card className="mt-[38px] h-[92px] rounded-[18px] border-border bg-card py-0 shadow-none md:mt-8 md:h-auto">
+    <Card className="h-[92px] rounded-[18px] border-border bg-card py-0 shadow-none md:h-auto">
       <CardContent className="px-5 py-5">
         <Typography
           as="h2"

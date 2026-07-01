@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'goals',
     'social',
     'wallet',
+    'events',
 ]
 
 AUTH_USER_MODEL = 'users.User'
@@ -183,6 +184,7 @@ SPECTACULAR_SETTINGS = {
         {'name': 'Goals', 'description': 'Goal creation, membership, progress, and status.'},
         {'name': 'Wallet', 'description': 'Multi-wallet balances and ledger history.'},
         {'name': 'Social', 'description': 'Posts, comments, likes, saves, shares, feed, and explore.'},
+        {'name': 'Events', 'description': 'Event listings and RSVPs.'},
     ],
 }
 

@@ -8,7 +8,7 @@ export type ExploreTile = {
   id: string;
   label: string;
   category: string;
-  media: "image" | "video";
+  media: "image" | "video" | "goal";
   tone: "primary" | "secondary" | "muted" | "card";
   size: "large" | "small" | "wide";
   href: string;
@@ -45,6 +45,44 @@ export function postToExploreTile(post: Post, index: number): ExploreTile {
     href: `/app/posts/${post.id}?from=explore`,
     hasCaption: Boolean(post.caption),
   };
+}
+
+const GOAL_TONES: ExploreTile["tone"][] = ["primary", "secondary", "muted", "card"];
+
+export function goalToExploreTile(goal: Goal, index: number): ExploreTile {
+  return {
+    id: `goal-${goal.id}`,
+    label: goal.title,
+    category: goal.category?.name ?? "",
+    media: "goal",
+    tone: GOAL_TONES[index % GOAL_TONES.length],
+    size: tileSize(index),
+    href: `/app/goals/${goal.id}?from=explore`,
+    hasCaption: Boolean(goal.description),
+  };
+}
+
+/** Interleaves posts and goals (2 posts : 1 goal) into a single tile feed. */
+export function combineExploreTiles(posts: Post[], goals: Goal[]): ExploreTile[] {
+  const tiles: ExploreTile[] = [];
+  let postIndex = 0;
+  let goalIndex = 0;
+  let tileIndex = 0;
+
+  while (postIndex < posts.length || goalIndex < goals.length) {
+    for (let taken = 0; taken < 2 && postIndex < posts.length; taken += 1) {
+      tiles.push(postToExploreTile(posts[postIndex], tileIndex));
+      postIndex += 1;
+      tileIndex += 1;
+    }
+    if (goalIndex < goals.length) {
+      tiles.push(goalToExploreTile(goals[goalIndex], tileIndex));
+      goalIndex += 1;
+      tileIndex += 1;
+    }
+  }
+
+  return tiles;
 }
 
 export function postToExploreSearchResult(post: Post): ExploreSearchResult {

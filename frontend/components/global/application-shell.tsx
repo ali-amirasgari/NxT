@@ -207,7 +207,7 @@ export function AppShell({ dir, children }: AppShellProps) {
                   >
                     <Link href="/app/goals/create" aria-label={t("createGoal")}>
                       <Icon
-                        icon="solar:add-circle-bold"
+                        icon="mingcute:add-fill"
                         className="size-6"
                         aria-hidden="true"
                       />

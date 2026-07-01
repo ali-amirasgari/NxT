@@ -30,6 +30,14 @@ class GoalService extends BaseService {
     return response.data.goal;
   }
 
+  async discoverGoals(limit?: number): Promise<Goal[]> {
+    const response = await this.getClient().get<GoalListEnvelope>(
+      API_ROUTES.goals.discover,
+      { params: compactParams({ limit }) },
+    );
+    return response.data.goals;
+  }
+
   async createGoal(payload: GoalPayload): Promise<Goal> {
     const response = await this.getClient().post<GoalEnvelope>(
       API_ROUTES.goals.list,

@@ -18,10 +18,21 @@ export const QUERY_KEYS = {
   goals: {
     all: ["goals"],
     list: (params?: Record<string, unknown>) => ["goals", "list", params ?? {}] as const,
+    discover: (limit?: number) => ["goals", "discover", limit ?? null] as const,
     detail: (goalId: string | number) => ["goals", "detail", String(goalId)] as const,
     create: ["goals", "create"],
     update: ["goals", "update"],
     delete: ["goals", "delete"],
+  },
+  events: {
+    all: ["events"],
+    list: (params?: Record<string, unknown>) => ["events", "list", params ?? {}] as const,
+    detail: (eventId: string | number) => ["events", "detail", String(eventId)] as const,
+    create: ["events", "create"],
+    update: ["events", "update"],
+    delete: ["events", "delete"],
+    rsvp: ["events", "rsvp"],
+    unrsvp: ["events", "unrsvp"],
   },
   wallet: {
     all: ["wallet"],

@@ -45,9 +45,11 @@ const colors = [
 
 export function GoalForm({
   initialGoal,
+  templateGoal,
   labels,
 }: {
   initialGoal?: Goal;
+  templateGoal?: Goal;
   labels: Record<string, string>;
 }) {
   const router = useRouter();
@@ -55,25 +57,27 @@ export function GoalForm({
   const updateGoal = useUpdateGoalMutation(initialGoal?.id ?? 0);
   const { data: categories = [] } = useCategoriesQuery();
 
+  const prefill = initialGoal ?? templateGoal;
+
   const [type, setType] = useState<"solo" | "group">(
-    initialGoal?.goal_type ?? "solo",
+    prefill?.goal_type ?? "solo",
   );
   const [color, setColor] = useState(() => {
     const index = colors.indexOf(
-      (initialGoal?.cover_color ?? "") as (typeof colors)[number],
+      (prefill?.cover_color ?? "") as (typeof colors)[number],
     );
     return index >= 0 ? index : 0;
   });
-  const [title, setTitle] = useState(initialGoal?.title ?? "");
+  const [title, setTitle] = useState(prefill?.title ?? "");
   const [description, setDescription] = useState(
-    initialGoal?.description ?? "",
+    prefill?.description ?? "",
   );
   const [categoryId, setCategoryId] = useState<number | null>(
-    initialGoal?.category?.id ?? initialGoal?.category_id ?? null,
+    prefill?.category?.id ?? prefill?.category_id ?? null,
   );
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [stake, setStake] = useState(
-    String(initialGoal?.stake_points ?? 200),
+    String(prefill?.stake_points ?? 200),
   );
   const [userSearch, setUserSearch] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<User[]>(() =>

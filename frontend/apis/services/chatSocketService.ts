@@ -1,5 +1,6 @@
 import { io } from "socket.io-client";
 
+import { getChatServiceBaseUrl } from "@/apis/services/chatServiceUrl";
 import type {
   AddReactionPayload,
   ChatSocket,
@@ -37,7 +38,7 @@ class ChatSocketService {
   getSocket() {
     if (!this.socket) {
       this.socket = io(
-        process.env.NEXT_PUBLIC_CHAT_SOCKET_URL ?? "http://localhost:3000",
+        getChatServiceBaseUrl(),
         {
           autoConnect: false,
           withCredentials: true,

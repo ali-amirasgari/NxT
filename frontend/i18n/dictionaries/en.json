@@ -135,21 +135,10 @@
       "description": "Goals, proof, photos, and videos from the community",
       "searchLabel": "Search Explore",
       "searchPlaceholder": "Search goals or people",
-      "creators": "People to follow",
       "loading": "Loading explore...",
       "loadError": "Couldn't load explore.",
       "retry": "Try again",
-      "empty": "Nothing to explore yet.",
-      "suggestedTitle": "Suggested for you",
-      "suggestedPosts": "Posts",
-      "suggestedGoals": "Goals",
-      "suggestedEmpty": "No suggestions yet.",
-      "filters": {
-        "forYou": "For you",
-        "fitness": "Fitness",
-        "coding": "Coding",
-        "proof": "Proof"
-      }
+      "empty": "Nothing to explore yet."
     },
     "publicProfile": {
       "back": "Back to Explore",
@@ -173,6 +162,7 @@
       "markAll": "Mark all as read",
       "loading": "Loading notifications...",
       "empty": "No notifications yet.",
+      "showMore": "Show more",
       "proofTitle": "Proof reminder",
       "proofDescription": "Your Morning 5K proof is due soon. Submit it to keep your streak.",
       "proofTime": "10 minutes ago",
@@ -192,6 +182,9 @@
       "searchPlaceholder": "Search accounts, goals, tags",
       "clear": "Clear search",
       "recentTitle": "Recent searches",
+      "recentEmpty": "No recent searches yet.",
+      "clearAll": "Clear all",
+      "removeSearch": "Remove search",
       "resultsTitle": "Search results",
       "suggestedTitle": "Suggested goals",
       "emptyTitle": "No results found",
@@ -231,7 +224,20 @@
       "summaryStreakLabel": "Current streak",
       "empty": "No active goals yet. Create one to get started.",
       "loadError": "Couldn't load your goals.",
-      "retry": "Try again"
+      "retry": "Try again",
+      "eventsTitle": "Upcoming events",
+      "eventAttendeesLabel": "{count} going",
+      "inspirationLabel": "Daily spark",
+      "quoteOneText": "Discipline is choosing between what you want now and what you want most.",
+      "quoteTwoText": "Small steps every day beat big plans that never start.",
+      "quoteThreeText": "You don't have to be great to start, but you have to start to be great.",
+      "goalsToTryTitle": "Goals to try",
+      "goalsToTryHint": "Fresh picks from the community",
+      "goalsToTryEmpty": "No goals to try right now. Check back soon.",
+      "goalsToTryLoadError": "Couldn't load goals to try.",
+      "goalsToTryRetry": "Try again",
+      "goalsToTryAdd": "Add",
+      "goalsToTryBy": "By {name}"
     },
     "profile": {
       "openSettings": "Open settings",
@@ -359,6 +365,23 @@
       "points": "{count} pts",
       "groupGoal": "Group goal",
       "soloGoal": "Solo goal"
+    },
+    "eventDetails": {
+      "pageTitle": "Event details",
+      "back": "Go back",
+      "more": "More options",
+      "cancelled": "Cancelled",
+      "when": "When",
+      "where": "Where",
+      "online": "Online",
+      "going": "{count} going",
+      "join": "Join event",
+      "cancelRsvp": "Cancel RSVP",
+      "joined": "You're in! See you there.",
+      "notFound": "This event was not found.",
+      "loadError": "Couldn't load this event.",
+      "retry": "Try again",
+      "rsvpError": "Something went wrong. Try again."
     },
     "comments": {
       "title": "Comments",

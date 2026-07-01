@@ -9,6 +9,10 @@ export function getGoal(goalId: string | number) {
   return goalService.getGoal(goalId);
 }
 
+export function discoverGoals(limit?: number) {
+  return goalService.discoverGoals(limit);
+}
+
 export function createGoal(payload: GoalPayload) {
   return goalService.createGoal(payload);
 }

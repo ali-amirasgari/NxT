@@ -126,7 +126,7 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://backend:8000}
       NEXT_PUBLIC_API_BASE_URL_DEV: ${NEXT_PUBLIC_API_BASE_URL_DEV:-http://backend:8000}
       NEXT_PUBLIC_AI_SERVICE_URL: ${NEXT_PUBLIC_AI_SERVICE_URL:-http://localhost:8001}
-      NEXT_PUBLIC_CHAT_SOCKET_URL: ${NEXT_PUBLIC_CHAT_SOCKET_URL:-http://localhost:8002}
+      NEXT_PUBLIC_CHAT_SERVICE_PORT: ${CHAT_SERVICE_PORT:-8002}
     volumes:
       - ./frontend:/app
       - frontend_node_modules:/app/node_modules

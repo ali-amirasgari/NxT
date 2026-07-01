@@ -6,6 +6,7 @@ import { QUERY_KEYS } from "@/apis/QUERY_KEYS";
 import {
   createGoal,
   deleteGoal,
+  discoverGoals,
   getGoal,
   listGoals,
   updateGoal,
@@ -24,6 +25,15 @@ export function useGoalQuery(goalId?: string | number) {
     queryKey: QUERY_KEYS.goals.detail(goalId ?? ""),
     queryFn: () => getGoal(goalId as string | number),
     enabled: Boolean(goalId),
+  });
+}
+
+export function useDiscoverGoalsQuery(limit?: number) {
+  return useQuery({
+    queryKey: QUERY_KEYS.goals.discover(limit),
+    queryFn: () => discoverGoals(limit),
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 }
 

@@ -1,5 +1,6 @@
 import { API_ROUTES } from "@/apis/API_ROUTES";
 import { BaseService } from "@/apis/services/baseService";
+import { getChatServiceBaseUrl } from "@/apis/services/chatServiceUrl";
 import type {
   Conversation,
   CreateDirectConversationPayload,
@@ -16,14 +17,6 @@ import type {
   MarkAllNotificationsReadResponse,
   NotificationUnreadCount,
 } from "@/apis/types/notification";
-
-function getChatServiceBaseUrl() {
-  return (
-    process.env.NEXT_PUBLIC_CHAT_SERVICE_URL ??
-    process.env.NEXT_PUBLIC_CHAT_SOCKET_URL ??
-    "http://localhost:8002"
-  );
-}
 
 function buildQueryParams(params?: Record<string, unknown>) {
   if (!params) {

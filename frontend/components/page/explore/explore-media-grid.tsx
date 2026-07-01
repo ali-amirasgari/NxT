@@ -39,9 +39,11 @@ export function ExploreMediaGrid({ tiles }: { tiles: ExploreTile[] }) {
           >
             <Icon
               icon={
-                tile.media === "video"
-                  ? "solar:videocamera-record-linear"
-                  : "solar:gallery-linear"
+                tile.media === "goal"
+                  ? "solar:target-bold"
+                  : tile.media === "video"
+                    ? "solar:videocamera-record-linear"
+                    : "solar:gallery-linear"
               }
               className="absolute end-2 top-2 size-4"
               aria-hidden="true"

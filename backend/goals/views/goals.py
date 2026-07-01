@@ -35,6 +35,23 @@ def goal_queryset_for(user):
     )
 
 
+def goal_discovery_queryset_for(user):
+    return (
+        Goal.objects.filter(status=Goal.Status.ACTIVE, category__isnull=False)
+        .exclude(Q(owner=user) | Q(memberships__user=user))
+        .select_related('owner', 'category')
+        .prefetch_related(
+            Prefetch(
+                'memberships',
+                queryset=GoalMember.objects.select_related('user'),
+                to_attr='prefetched_memberships',
+            )
+        )
+        .annotate(member_count=Count('memberships', distinct=True))
+        .distinct()
+    )
+
+
 def goal_payload(goal, request):
     return GoalEnvelopeSerializer(
         {'goal': goal},
@@ -100,12 +117,44 @@ class GoalListCreateView(APIView):
         return Response(goal_payload(fresh, request), status=status.HTTP_201_CREATED)
 
 
+class GoalDiscoverView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    @extend_schema(
+        tags=['Goals'],
+        operation_id='goals_discover',
+        summary='Random public goals to try, excluding goals the user already owns or joined',
+        parameters=[
+            OpenApiParameter('limit', int, description='Max goals to return (default 6, max 20).'),
+        ],
+        responses=GoalListEnvelopeSerializer,
+    )
+    def get(self, request):
+        try:
+            limit = int(request.query_params.get('limit', 6))
+        except ValueError:
+            limit = 6
+        limit = max(1, min(limit, 20))
+
+        goals = goal_discovery_queryset_for(request.user).order_by('?')[:limit]
+        return Response(
+            GoalListEnvelopeSerializer(
+                {'goals': goals},
+                context={'request': request},
+            ).data
+        )
+
+
 class GoalDetailView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get_goal(self, request, goal_id):
         try:
             return goal_queryset_for(request.user).get(pk=goal_id)
+        except Goal.DoesNotExist:
+            pass
+        try:
+            return goal_discovery_queryset_for(request.user).get(pk=goal_id)
         except Goal.DoesNotExist:
             return None
 

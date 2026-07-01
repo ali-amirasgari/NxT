@@ -3,7 +3,7 @@
 import { Icon } from "@iconify/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 
 import { useGoalsQuery } from "@/apis/queries/goals/queries";
 import { useExploreSearchQuery } from "@/apis/queries/social/queries";
@@ -16,9 +16,11 @@ import {
 import { ExploreFilterChips } from "@/components/page/explore/explore-filter-chips";
 import { ExploreSearchField } from "@/components/page/explore/explore-search-field";
 import { ExploreSearchResults } from "@/components/page/explore/explore-search-results";
+import { RecentSearches } from "@/components/page/explore/recent-searches";
 import { GoalCard } from "@/components/global/goal-card";
 import { Button } from "@/components/ui/button";
 import { Typography } from "@/components/ui/typography";
+import { useRecentSearches } from "@/lib/use-recent-searches";
 
 type SearchType = "all" | "posts" | "accounts" | "goals" | "tags";
 
@@ -37,6 +39,7 @@ function ExploreSearchContent() {
       ? requestedType
       : "all",
   );
+  const recentSearches = useRecentSearches();
   const searchQuery = useExploreSearchQuery({
     q: query.trim(),
     type,
@@ -67,6 +70,15 @@ function ExploreSearchContent() {
     ],
     [goalsQuery.data, searchQuery.data, type, usersQuery.data],
   );
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) return;
+    const timeoutId = window.setTimeout(() => {
+      recentSearches.addSearch(trimmed);
+    }, 800);
+    return () => window.clearTimeout(timeoutId);
+  }, [query, recentSearches.addSearch]);
+
   const suggestedGoals = useMemo(
     () =>
       (goalsQuery.data ?? []).slice(0, 4).map((goal) => ({
@@ -113,19 +125,37 @@ function ExploreSearchContent() {
       </div>
 
       <div className="mt-4" aria-live="polite">
-        <Typography
-          as="h1"
-          className="mb-2 text-base font-bold text-foreground"
-        >
-          {query ? t("resultsTitle") : t("recentTitle")}
-        </Typography>
-        <ExploreSearchResults
-          results={results}
-          emptyTitle={t("emptyTitle")}
-          emptyDescription={
-            searchQuery.isLoading ? t("loading") : t("emptyDescription")
-          }
-        />
+        {query ? (
+          <>
+            <Typography
+              as="h1"
+              className="mb-2 text-base font-bold text-foreground"
+            >
+              {t("resultsTitle")}
+            </Typography>
+            <ExploreSearchResults
+              results={results}
+              emptyTitle={t("emptyTitle")}
+              emptyDescription={
+                searchQuery.isLoading ? t("loading") : t("emptyDescription")
+              }
+            />
+          </>
+        ) : recentSearches.items.length > 0 ? (
+          <RecentSearches
+            title={t("recentTitle")}
+            clearAllLabel={t("clearAll")}
+            removeLabel={t("removeSearch")}
+            items={recentSearches.items}
+            onSelect={setQuery}
+            onRemove={recentSearches.removeSearch}
+            onClearAll={recentSearches.clearSearches}
+          />
+        ) : (
+          <Typography as="p" variant="muted" className="py-6 text-center text-sm">
+            {t("recentEmpty")}
+          </Typography>
+        )}
       </div>
 
       {suggestedGoals.length > 0 ? (

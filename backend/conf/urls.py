@@ -6,6 +6,7 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+from events import urls as events_urls
 from goals import urls as goals_urls
 from social import urls as social_urls
 from users import urls as users_urls
@@ -27,6 +28,8 @@ APP_URLPATTERNS = [
     path('goals/', include(goals_urls.urlpatterns)),
     path('wallets', include(wallet_urls.root_urlpatterns)),
     path('wallets/', include(wallet_urls.urlpatterns)),
+    path('events', include(events_urls.root_urlpatterns)),
+    path('events/', include(events_urls.urlpatterns)),
     path('', include(social_urls.urlpatterns)),
 ]
 

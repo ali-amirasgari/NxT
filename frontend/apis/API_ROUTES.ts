@@ -30,10 +30,22 @@ export const API_ROUTES = {
   },
   goals: {
     list: "/api/goals",
+    discover: "/api/goals/discover",
     detail: (goalId: string | number) => `/api/goals/${goalId}`,
     upstream: {
       list: "/goals",
+      discover: "/goals/discover",
       detail: (goalId: string | number) => `/goals/${goalId}`,
+    },
+  },
+  events: {
+    list: "/api/events",
+    detail: (eventId: string | number) => `/api/events/${eventId}`,
+    rsvp: (eventId: string | number) => `/api/events/${eventId}/rsvp`,
+    upstream: {
+      list: "/events",
+      detail: (eventId: string | number) => `/events/${eventId}`,
+      rsvp: (eventId: string | number) => `/events/${eventId}/rsvp`,
     },
   },
   wallet: {
