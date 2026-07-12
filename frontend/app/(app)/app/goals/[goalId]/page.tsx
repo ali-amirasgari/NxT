@@ -5,10 +5,17 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { toast } from "sonner";
 
-import { useGoalQuery } from "@/apis/queries/goals/queries";
+import {
+  useAcceptGoalMutation,
+  useDeclineGoalMutation,
+  useGoalQuery,
+  useUpdateGoalMutation,
+} from "@/apis/queries/goals/queries";
 import { useMeQuery } from "@/apis/queries/users/queries";
 import { resolveDisplayName, userInitial } from "@/lib/user-display";
+import { GoalProofSection } from "@/components/page/goals/goal-proof-section";
 import { DetailActions } from "@/components/global/detail-actions";
 import { DetailAuthorRow } from "@/components/global/detail-author-row";
 import { ContentOptionsMenu } from "@/components/global/content-options-menu";
@@ -23,10 +30,14 @@ import { Typography } from "@/components/ui/typography";
 
 export default function GoalDetailPage() {
   const t = useTranslations("app.details");
+  const tp = useTranslations("app.proof");
   const params = useParams<{ goalId: string }>();
   const searchParams = useSearchParams();
   const { data: goal, isLoading, isError } = useGoalQuery(params.goalId);
   const { data: me } = useMeQuery();
+  const updateGoal = useUpdateGoalMutation(params.goalId);
+  const acceptGoal = useAcceptGoalMutation(params.goalId);
+  const declineGoal = useDeclineGoalMutation(params.goalId);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
 
@@ -68,6 +79,11 @@ export default function GoalDetailPage() {
   const ownerName = resolveDisplayName(goal.owner);
   const scheduleLabel =
     goal.schedule_label || goal.category?.name || "—";
+  const myMembership = me
+    ? goal.members.find((member) => member.user_id === me.id)
+    : undefined;
+  const isInvited = myMembership?.status === "invited";
+  const isAcceptedMember = myMembership?.status === "accepted";
 
   return (
     <section className="mx-auto w-full max-w-[390px] px-1 md:max-w-3xl">
@@ -191,16 +207,81 @@ export default function GoalDetailPage() {
           shareUrl={`/app/goals/${goal.id}`}
         />
 
-        <Button asChild size="lg" className="h-12 w-full rounded-xl">
-          <Link href={`/app/posts/create?goalId=${goal.id}`}>
+        {goal.goal_type === "group" ? (
+          isInvited ? (
+            <Card className="gap-0 rounded-3xl border-border bg-card py-0 shadow-none ring-0">
+              <CardContent className="space-y-4 p-5">
+                <div className="flex items-center gap-2">
+                  <Icon
+                    icon="solar:users-group-rounded-linear"
+                    className="size-5 text-primary"
+                    aria-hidden="true"
+                  />
+                  <Typography as="p" variant="small" className="text-sm font-semibold">
+                    {tp("invitePending")}
+                  </Typography>
+                </div>
+                <Typography as="p" variant="muted" className="text-xs">
+                  {tp("inviteHint")}
+                </Typography>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    tone="neutral"
+                    disabled={declineGoal.isPending}
+                    onClick={() =>
+                      declineGoal.mutate(undefined, {
+                        onError: () => toast.error(tp("error")),
+                      })
+                    }
+                    className="h-11 rounded-xl"
+                  >
+                    {tp("decline")}
+                  </Button>
+                  <Button
+                    type="button"
+                    disabled={acceptGoal.isPending}
+                    onClick={() =>
+                      acceptGoal.mutate(undefined, {
+                        onError: () => toast.error(tp("error")),
+                      })
+                    }
+                    className="h-11 rounded-xl font-bold"
+                  >
+                    {tp("accept")}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : isAcceptedMember ? (
+            <GoalProofSection
+              goalId={goal.id}
+              goalStatus={goal.status}
+              meId={me?.id}
+            />
+          ) : null
+        ) : isOwner && goal.status === "active" ? (
+          <Button
+            type="button"
+            size="lg"
+            className="h-12 w-full rounded-xl"
+            disabled={updateGoal.isPending}
+            onClick={() =>
+              updateGoal.mutate(
+                { status: "completed" },
+                { onError: () => toast.error(tp("error")) },
+              )
+            }
+          >
             <Icon
-              icon="solar:upload-linear"
+              icon="solar:check-circle-linear"
               className="size-5"
               aria-hidden="true"
             />
-            {t("submitProof")}
-          </Link>
-        </Button>
+            {tp("markDone")}
+          </Button>
+        ) : null}
       </div>
     </section>
   );

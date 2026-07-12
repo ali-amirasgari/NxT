@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -28,6 +29,16 @@ class SocialApiTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         return f"Bearer {response.data['access_token']}"
 
+    def test_post_without_media_is_rejected(self):
+        author = self.create_user('nomedia@example.com')
+        response = self.client.post(
+            reverse('posts-list'),
+            {'title': 'No media', 'caption': 'x', 'visibility': Post.Visibility.PUBLIC},
+            format='json',
+            HTTP_AUTHORIZATION=self.auth(author),
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
     def test_create_like_comment_and_save_post(self):
         author = self.create_user('author@example.com')
         viewer = self.create_user('viewer@example.com')
@@ -37,14 +48,16 @@ class SocialApiTests(APITestCase):
             {
                 'title': 'Morning run complete',
                 'caption': '5km before breakfast.',
-                'media_type': Post.MediaType.IMAGE,
                 'visibility': Post.Visibility.PUBLIC,
+                'media': SimpleUploadedFile('run.jpg', b'img-bytes', content_type='image/jpeg'),
             },
-            format='json',
+            format='multipart',
             HTTP_AUTHORIZATION=self.auth(author),
         )
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
         post_id = create_response.data['post']['id']
+        # media_type is inferred from the uploaded file.
+        self.assertEqual(create_response.data['post']['media_type'], Post.MediaType.IMAGE)
 
         like_response = self.client.post(
             reverse('posts-like', kwargs={'post_id': post_id}),

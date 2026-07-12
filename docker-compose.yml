@@ -46,6 +46,7 @@ services:
       MYSQL_HOST: db
       MYSQL_PORT: 3306
       AI_SERVICE_URL: http://ai-service:8000
+      MEDIA_PUBLIC_BASE_URL: ${MEDIA_PUBLIC_BASE_URL:-http://localhost:8000}
     volumes:
       - ./backend:/app
     ports:

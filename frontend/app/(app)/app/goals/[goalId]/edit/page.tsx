@@ -23,6 +23,8 @@ export default function EditGoalPage() {
     soloCover: t("soloCover"),
     coverHelp: t("coverHelp"),
     color: t("color"),
+    coverImage: t("coverImage"),
+    coverImageHint: t("coverImageHint"),
     title: t("goalTitle"),
     titlePlaceholder: t("goalTitlePlaceholder"),
     description: t("description"),

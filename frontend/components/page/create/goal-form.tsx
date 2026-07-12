@@ -2,15 +2,19 @@
 
 import { Icon } from "@iconify/react";
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 
 import { useCategoriesQuery } from "@/apis/queries/social/queries";
 import {
   useCreateGoalMutation,
   useUpdateGoalMutation,
+  useUploadGoalCoverMutation,
 } from "@/apis/queries/goals/queries";
 import { useUsersSearchQuery } from "@/apis/queries/users/queries";
+import { useWalletsQuery } from "@/apis/queries/wallet/queries";
 import type { Goal, GoalPayload } from "@/apis/types/goal";
 import type { User } from "@/apis/types/user";
 import { resolveDisplayName, userInitial } from "@/lib/user-display";
@@ -53,9 +57,15 @@ export function GoalForm({
   labels: Record<string, string>;
 }) {
   const router = useRouter();
+  const tw = useTranslations("app.wallet");
   const createGoal = useCreateGoalMutation();
   const updateGoal = useUpdateGoalMutation(initialGoal?.id ?? 0);
+  const uploadCover = useUploadGoalCoverMutation();
   const { data: categories = [] } = useCategoriesQuery();
+  const { data: wallets = [] } = useWalletsQuery();
+  const availablePoints = Math.round(
+    Number(wallets.find((wallet) => wallet.kind === "points")?.available_balance ?? 0),
+  );
 
   const prefill = initialGoal ?? templateGoal;
 
@@ -75,6 +85,8 @@ export function GoalForm({
   const [categoryId, setCategoryId] = useState<number | null>(
     prefill?.category?.id ?? prefill?.category_id ?? null,
   );
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverName, setCoverName] = useState("");
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [stake, setStake] = useState(
     String(prefill?.stake_points ?? 200),
@@ -88,7 +100,8 @@ export function GoalForm({
 
   const { data: userResults = [] } = useUsersSearchQuery({ search: userSearch });
   const selectedCategory = categories.find((item) => item.id === categoryId);
-  const isPending = createGoal.isPending || updateGoal.isPending;
+  const isPending =
+    createGoal.isPending || updateGoal.isPending || uploadCover.isPending;
 
   function toggleUser(user: User) {
     setSelectedUsers((current) =>
@@ -122,14 +135,25 @@ export function GoalForm({
 
     const onError = () => toast.error(labels.error);
 
+    const finish = (goalId: number) => {
+      if (coverFile) {
+        uploadCover.mutate(
+          { goalId, file: coverFile },
+          { onSettled: () => router.push(`/app/goals/${goalId}`) },
+        );
+      } else {
+        router.push(`/app/goals/${goalId}`);
+      }
+    };
+
     if (initialGoal) {
       updateGoal.mutate(payload, {
-        onSuccess: (goal) => router.push(`/app/goals/${goal.id}`),
+        onSuccess: (goal) => finish(goal.id),
         onError,
       });
     } else {
       createGoal.mutate(payload, {
-        onSuccess: (goal) => router.push(`/app/goals/${goal.id}`),
+        onSuccess: (goal) => finish(goal.id),
         onError,
       });
     }
@@ -189,6 +213,34 @@ export function GoalForm({
             </Button>
           ))}
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>{labels.coverImage}</Label>
+        <Label
+          htmlFor="goal-cover"
+          className="flex min-h-[120px] cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-primary/50 bg-primary/5 p-4 text-center transition-colors hover:bg-primary/10"
+        >
+          <Icon
+            icon="solar:camera-add-bold"
+            className="size-6 text-primary"
+            aria-hidden="true"
+          />
+          <Typography as="span" variant="small" className="mt-2 text-sm">
+            {coverName || labels.coverImageHint}
+          </Typography>
+          <Input
+            id="goal-cover"
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => {
+              const selected = event.target.files?.[0] ?? null;
+              setCoverFile(selected);
+              setCoverName(selected?.name ?? "");
+            }}
+          />
+        </Label>
       </div>
 
       <div className="space-y-2">
@@ -272,19 +324,26 @@ export function GoalForm({
         </Popover>
       </div>
 
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="goal-stake">{labels.stake}</Label>
+          <Link href="/app/wallet" className="text-xs font-medium text-primary">
+            {tw("balance")}: {availablePoints}
+          </Link>
+        </div>
+        <Input
+          id="goal-stake"
+          type="number"
+          min="0"
+          max={availablePoints}
+          value={stake}
+          onChange={(event) => setStake(event.target.value)}
+          className="h-10 rounded-xl bg-card"
+        />
+      </div>
+
       {type === "group" ? (
         <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="goal-stake">{labels.stake}</Label>
-            <Input
-              id="goal-stake"
-              type="number"
-              min="0"
-              value={stake}
-              onChange={(event) => setStake(event.target.value)}
-              className="h-10 rounded-xl bg-card"
-            />
-          </div>
           <div className="space-y-2">
             <Label>{labels.users}</Label>
             <Popover>

@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -9,6 +10,9 @@ from .models import Wallet, WalletLedgerEntry
 from .services import credit_wallet, hold_wallet_amount, release_wallet_hold
 
 
+# These test the wallet mutation mechanics in isolation, so switch off the
+# product-level signup grant that would otherwise seed a balance + ledger entry.
+@override_settings(WALLET_SIGNUP_POINTS_GRANT=0)
 class WalletApiTests(APITestCase):
     password = 'StrongWalletPassword2026!'
 

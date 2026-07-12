@@ -63,6 +63,7 @@ export default function EditPostPage() {
           categorySearch: t("categorySearch"),
           noCategory: t("noCategory"),
           stakeReminder: t("stakeReminder"),
+          requireMedia: t("requireMedia"),
           submit: t("submitPost"),
           save: t("savePost"),
           error: t("error"),

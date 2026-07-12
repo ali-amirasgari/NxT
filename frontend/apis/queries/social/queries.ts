@@ -45,7 +45,8 @@ export function useCreatePostMutation() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: QUERY_KEYS.social.posts.create,
-    mutationFn: createPost,
+    mutationFn: ({ payload, media }: { payload: PostPayload; media?: File | null }) =>
+      createPost(payload, media),
     onSuccess: (post) => {
       queryClient.setQueryData<Post>(QUERY_KEYS.social.posts.detail(post.id), post);
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.social.posts.all });
@@ -57,7 +58,8 @@ export function useUpdatePostMutation(postId: string | number) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationKey: [...QUERY_KEYS.social.posts.update, String(postId)],
-    mutationFn: (payload: PostPayload) => updatePost(postId, payload),
+    mutationFn: ({ payload, media }: { payload: PostPayload; media?: File | null }) =>
+      updatePost(postId, payload, media),
     onSuccess: (post) => {
       queryClient.setQueryData<Post>(QUERY_KEYS.social.posts.detail(post.id), post);
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.social.posts.all });

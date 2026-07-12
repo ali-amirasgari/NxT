@@ -9,6 +9,11 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { DirectionProvider } from "@/components/ui/direction";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
@@ -49,6 +54,13 @@ const navigationItems = [
     labelKey: "goals",
     desktopIcon: "solar:target-linear",
     mobileIcon: "solar:target-linear",
+    showOnMobile: false,
+  },
+  {
+    href: "/app/wallet",
+    labelKey: "wallet",
+    desktopIcon: "solar:wallet-money-linear",
+    mobileIcon: "solar:wallet-money-linear",
     showOnMobile: false,
   },
   {
@@ -200,19 +212,49 @@ export function AppShell({ dir, children }: AppShellProps) {
                 })}
 
                 <div className="flex size-full items-center justify-center">
-                  <Button
-                    asChild
-                    size="icon"
-                    className="size-10 -translate-y-2 rounded-full text-primary-foreground shadow-[0_8px_20px_rgba(255,122,26,0.3)] hover:-translate-y-2.5"
-                  >
-                    <Link href="/app/goals/create" aria-label={t("createGoal")}>
-                      <Icon
-                        icon="mingcute:add-fill"
-                        className="size-6"
-                        aria-hidden="true"
-                      />
-                    </Link>
-                  </Button>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        size="icon"
+                        aria-label={t("create")}
+                        className="size-10 -translate-y-2 rounded-full text-primary-foreground shadow-[0_8px_20px_rgba(255,122,26,0.3)] hover:-translate-y-2.5"
+                      >
+                        <Icon
+                          icon="mingcute:add-fill"
+                          className="size-6"
+                          aria-hidden="true"
+                        />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      align="center"
+                      side="top"
+                      className="w-44 rounded-2xl p-1"
+                    >
+                      <Link
+                        href="/app/goals/create"
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm hover:bg-muted"
+                      >
+                        <Icon
+                          icon="solar:target-bold"
+                          className="size-4 text-primary"
+                          aria-hidden="true"
+                        />
+                        {t("createGoal")}
+                      </Link>
+                      <Link
+                        href="/app/posts/create"
+                        className="flex items-center gap-2 rounded-xl px-3 py-2.5 text-sm hover:bg-muted"
+                      >
+                        <Icon
+                          icon="solar:gallery-add-bold"
+                          className="size-4 text-primary"
+                          aria-hidden="true"
+                        />
+                        {t("createPost")}
+                      </Link>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 {mobileNavigationItems.slice(2).map((item) => {

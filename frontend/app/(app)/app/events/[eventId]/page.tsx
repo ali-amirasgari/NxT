@@ -64,6 +64,7 @@ export default function EventDetailPage() {
   const onRsvpError = () => toast.error(t("rsvpError"));
 
   function toggleRsvp() {
+    if (!event) return;
     if (event.is_attending) {
       unrsvp.mutate(undefined, { onError: onRsvpError });
     } else {

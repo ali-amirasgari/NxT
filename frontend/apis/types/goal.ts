@@ -2,6 +2,8 @@ import type { Category } from "@/apis/types/category";
 import type { User } from "@/apis/types/user";
 
 export type GoalMemberRole = "owner" | "admin" | "member";
+export type GoalMemberStatus = "invited" | "accepted" | "declined";
+export type GoalMemberOutcome = "committed" | "succeeded" | "failed";
 export type GoalType = "solo" | "group";
 export type GoalStatus = "active" | "completed" | "failed" | "paused" | "archived";
 
@@ -9,6 +11,8 @@ export type GoalMember = {
   user_id: number;
   user: User;
   role: GoalMemberRole;
+  status: GoalMemberStatus;
+  outcome: GoalMemberOutcome;
   created_at: string;
 };
 
@@ -26,6 +30,7 @@ export type Goal = {
   stake_points: number;
   schedule_label: string;
   cover_color: string;
+  cover_image?: string | null;
   starts_at?: string | null;
   due_at?: string | null;
   members: GoalMember[];
@@ -62,3 +67,21 @@ export type GoalListParams = Partial<{
 
 export type GoalEnvelope = { goal: Goal };
 export type GoalListEnvelope = { goals: Goal[] };
+
+export type ProofStatus = "pending" | "approved" | "rejected";
+export type ProofVote = "approve" | "reject";
+
+export type GoalProof = {
+  id: number;
+  goal_id: number;
+  author: User;
+  media_url: string | null;
+  note: string;
+  status: ProofStatus;
+  approvals: number;
+  rejections: number;
+  created_at: string;
+};
+
+export type GoalProofListEnvelope = { proofs: GoalProof[] };
+export type ProofReviewEnvelope = { proof: GoalProof; settled: boolean };

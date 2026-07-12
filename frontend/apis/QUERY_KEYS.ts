@@ -23,6 +23,9 @@ export const QUERY_KEYS = {
     create: ["goals", "create"],
     update: ["goals", "update"],
     delete: ["goals", "delete"],
+    proofs: (goalId: string | number) => ["goals", "proofs", String(goalId)] as const,
+    submitProof: ["goals", "submit-proof"],
+    reviewProof: ["goals", "review-proof"],
   },
   events: {
     all: ["events"],

@@ -51,6 +51,7 @@ class Goal(TimestampedModel):
     stake_points = models.PositiveIntegerField(default=0)
     schedule_label = models.CharField(max_length=160, blank=True)
     cover_color = models.CharField(max_length=40, blank=True)
+    cover_image = models.FileField(upload_to='goals/%Y/%m/', blank=True)
     starts_at = models.DateTimeField(null=True, blank=True)
     due_at = models.DateTimeField(null=True, blank=True)
 
@@ -72,6 +73,16 @@ class GoalMember(TimestampedModel):
         ADMIN = 'admin', 'Admin'
         MEMBER = 'member', 'Member'
 
+    class Outcome(models.TextChoices):
+        COMMITTED = 'committed', 'Committed'
+        SUCCEEDED = 'succeeded', 'Succeeded'
+        FAILED = 'failed', 'Failed'
+
+    class MemberStatus(models.TextChoices):
+        INVITED = 'invited', 'Invited'
+        ACCEPTED = 'accepted', 'Accepted'
+        DECLINED = 'declined', 'Declined'
+
     goal = models.ForeignKey(
         Goal,
         on_delete=models.CASCADE,
@@ -86,6 +97,19 @@ class GoalMember(TimestampedModel):
         max_length=16,
         choices=Role.choices,
         default=Role.MEMBER,
+    )
+    stake_amount = models.PositiveIntegerField(default=0)
+    outcome = models.CharField(
+        max_length=16,
+        choices=Outcome.choices,
+        default=Outcome.COMMITTED,
+    )
+    # Invited members must accept before their stake is held. Default to invited
+    # so no one is ever staked without an explicit accept.
+    status = models.CharField(
+        max_length=16,
+        choices=MemberStatus.choices,
+        default=MemberStatus.INVITED,
     )
 
     class Meta:

@@ -10,7 +10,7 @@ import {
   useUpdatePostMutation,
   useCategoriesQuery,
 } from "@/apis/queries/social/queries";
-import type { Post, PostPayload } from "@/apis/types/social";
+import type { Post, PostMediaType, PostPayload } from "@/apis/types/social";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -49,6 +49,7 @@ export function PostForm({
 
   const [title, setTitle] = useState(initialPost?.title ?? "");
   const [caption, setCaption] = useState(initialPost?.caption ?? "");
+  const [file, setFile] = useState<File | null>(null);
   const [fileName, setFileName] = useState("");
   const [categoryId, setCategoryId] = useState<number | null>(
     initialPost?.category?.id ?? initialPost?.category_id ?? null,
@@ -64,13 +65,18 @@ export function PostForm({
     const trimmedTitle = title.trim();
     if (!trimmedTitle) return;
 
-    // TODO: media upload is not wired to a backend yet — media_url stays empty.
+    const mediaType: PostMediaType = file
+      ? file.type.startsWith("video")
+        ? "video"
+        : "image"
+      : (initialPost?.media_type ?? "none");
+
     const payload: PostPayload = {
       title: trimmedTitle,
       caption: caption.trim(),
       category_id: categoryId,
       visibility: initialPost?.visibility ?? "public",
-      media_type: initialPost?.media_type ?? "none",
+      media_type: mediaType,
       media_tone: initialPost?.media_tone ?? "primary",
     };
 
@@ -81,15 +87,21 @@ export function PostForm({
     const onError = () => toast.error(labels.error);
 
     if (initialPost) {
-      updatePost.mutate(payload, {
-        onSuccess: (post) => router.push(`/app/posts/${post.id}`),
-        onError,
-      });
+      updatePost.mutate(
+        { payload, media: file },
+        {
+          onSuccess: (post) => router.push(`/app/posts/${post.id}`),
+          onError,
+        },
+      );
     } else {
-      createPost.mutate(payload, {
-        onSuccess: (post) => router.push(`/app/posts/${post.id}`),
-        onError,
-      });
+      createPost.mutate(
+        { payload, media: file },
+        {
+          onSuccess: (post) => router.push(`/app/posts/${post.id}`),
+          onError,
+        },
+      );
     }
   }
 
@@ -145,7 +157,11 @@ export function PostForm({
           type="file"
           accept="image/*,video/*"
           className="sr-only"
-          onChange={(event) => setFileName(event.target.files?.[0]?.name ?? "")}
+          onChange={(event) => {
+            const selected = event.target.files?.[0] ?? null;
+            setFile(selected);
+            setFileName(selected?.name ?? "");
+          }}
         />
       </Label>
 
@@ -218,9 +234,15 @@ export function PostForm({
         />
       </div>
 
+      {!initialPost && !file ? (
+        <Typography as="p" variant="muted" className="text-center text-xs">
+          {labels.requireMedia}
+        </Typography>
+      ) : null}
+
       <Button
         type="submit"
-        disabled={!title.trim() || isPending}
+        disabled={!title.trim() || isPending || (!initialPost && !file)}
         className="h-12 w-full rounded-2xl font-bold"
       >
         <Icon icon="solar:verified-check-bold" className="size-5" aria-hidden="true" />

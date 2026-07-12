@@ -6,6 +6,10 @@ import type {
   GoalListEnvelope,
   GoalListParams,
   GoalPayload,
+  GoalProof,
+  GoalProofListEnvelope,
+  ProofReviewEnvelope,
+  ProofVote,
 } from "@/apis/types/goal";
 
 function compactParams(params?: Record<string, unknown>) {
@@ -56,6 +60,64 @@ class GoalService extends BaseService {
 
   async deleteGoal(goalId: string | number): Promise<void> {
     await this.getClient().delete(API_ROUTES.goals.detail(goalId));
+  }
+
+  async listProofs(goalId: string | number): Promise<GoalProof[]> {
+    const response = await this.getClient().get<GoalProofListEnvelope>(
+      API_ROUTES.goals.proof(goalId),
+    );
+    return response.data.proofs;
+  }
+
+  async submitProof(
+    goalId: string | number,
+    media: File,
+    note?: string,
+  ): Promise<GoalProof> {
+    const form = new FormData();
+    form.append("media", media);
+    if (note) {
+      form.append("note", note);
+    }
+    const response = await this.getClient().post<GoalProof>(
+      API_ROUTES.goals.proof(goalId),
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return response.data;
+  }
+
+  async reviewProof(
+    proofId: string | number,
+    vote: ProofVote,
+  ): Promise<ProofReviewEnvelope> {
+    const response = await this.getClient().post<ProofReviewEnvelope>(
+      API_ROUTES.goals.proofReview(proofId),
+      { vote },
+    );
+    return response.data;
+  }
+
+  async acceptGoal(goalId: string | number): Promise<Goal> {
+    const response = await this.getClient().post<GoalEnvelope>(
+      API_ROUTES.goals.accept(goalId),
+    );
+    return response.data.goal;
+  }
+
+  async declineGoal(goalId: string | number): Promise<void> {
+    await this.getClient().post(API_ROUTES.goals.decline(goalId));
+  }
+
+  async uploadGoalCover(goalId: string | number, file: File): Promise<Goal> {
+    const form = new FormData();
+    form.append("cover_image", file);
+    const response = await this.getClient().post<GoalEnvelope>(
+      API_ROUTES.goals.cover(goalId),
+      form,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return response.data.goal;
   }
 }
 

@@ -16,6 +16,18 @@ import type {
   SharePayload,
 } from "@/apis/types/social";
 
+function buildPostForm(payload: PostPayload, media: File): FormData {
+  const form = new FormData();
+  Object.entries(payload).forEach(([key, value]) => {
+    // media_type is inferred server-side from the uploaded file.
+    if (value !== undefined && value !== null && key !== "media_url" && key !== "media_type") {
+      form.append(key, String(value));
+    }
+  });
+  form.append("media", media);
+  return form;
+}
+
 function compactParams(params?: Record<string, unknown>) {
   return Object.fromEntries(
     Object.entries(params ?? {}).filter(([, value]) => value !== undefined && value !== ""),
@@ -38,7 +50,15 @@ class SocialService extends BaseService {
     return response.data.post;
   }
 
-  async createPost(payload: PostPayload): Promise<Post> {
+  async createPost(payload: PostPayload, media?: File | null): Promise<Post> {
+    if (media) {
+      const response = await this.getClient().post<PostEnvelope>(
+        API_ROUTES.social.posts.list,
+        buildPostForm(payload, media),
+        { headers: { "Content-Type": "multipart/form-data" } },
+      );
+      return response.data.post;
+    }
     const response = await this.getClient().post<PostEnvelope>(
       API_ROUTES.social.posts.list,
       payload,
@@ -46,7 +66,19 @@ class SocialService extends BaseService {
     return response.data.post;
   }
 
-  async updatePost(postId: string | number, payload: PostPayload): Promise<Post> {
+  async updatePost(
+    postId: string | number,
+    payload: PostPayload,
+    media?: File | null,
+  ): Promise<Post> {
+    if (media) {
+      const response = await this.getClient().patch<PostEnvelope>(
+        API_ROUTES.social.posts.detail(postId),
+        buildPostForm(payload, media),
+        { headers: { "Content-Type": "multipart/form-data" } },
+      );
+      return response.data.post;
+    }
     const response = await this.getClient().patch<PostEnvelope>(
       API_ROUTES.social.posts.detail(postId),
       payload,

@@ -47,6 +47,7 @@ class Post(TimestampedModel):
     )
     title = models.CharField(max_length=160)
     caption = models.TextField(blank=True)
+    media = models.FileField(upload_to='posts/%Y/%m/', blank=True)
     media_url = models.URLField(max_length=500, blank=True)
     media_type = models.CharField(
         max_length=16,

@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 
+from conf.media import public_media_url
 from users.serializers import UserSerializer
 
 from social.models import Category
@@ -24,6 +25,8 @@ class GoalMemberSerializer(serializers.ModelSerializer):
             'user_id',
             'user',
             'role',
+            'status',
+            'outcome',
             'created_at',
         )
         read_only_fields = fields
@@ -34,6 +37,7 @@ class GoalSerializer(serializers.ModelSerializer):
     owner_id = serializers.IntegerField(source='owner.id', read_only=True)
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(source='category.id', read_only=True, allow_null=True)
+    cover_image = serializers.SerializerMethodField()
     members = serializers.SerializerMethodField()
     member_count = serializers.SerializerMethodField()
 
@@ -53,6 +57,7 @@ class GoalSerializer(serializers.ModelSerializer):
             'stake_points',
             'schedule_label',
             'cover_color',
+            'cover_image',
             'starts_at',
             'due_at',
             'members',
@@ -61,6 +66,9 @@ class GoalSerializer(serializers.ModelSerializer):
             'updated_at',
         )
         read_only_fields = fields
+
+    def get_cover_image(self, obj) -> str | None:
+        return public_media_url(obj.cover_image, self.context.get('request'))
 
     @extend_schema_field(GoalMemberSerializer(many=True))
     def get_members(self, obj):
@@ -78,6 +86,10 @@ class GoalSerializer(serializers.ModelSerializer):
         if annotated is not None:
             return annotated
         return obj.memberships.count()
+
+
+class GoalCoverSerializer(serializers.Serializer):
+    cover_image = serializers.FileField()
 
 
 class GoalMemberInputSerializer(serializers.Serializer):

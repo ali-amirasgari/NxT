@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
+from conf.media import public_media_url
 from goals.models import Goal
 from users.serializers import UserSerializer
 
@@ -25,6 +26,7 @@ class PostSerializer(serializers.ModelSerializer):
     goal_id = serializers.IntegerField(source='goal.id', read_only=True, allow_null=True)
     category = CategorySerializer(read_only=True)
     category_id = serializers.IntegerField(source='category.id', read_only=True, allow_null=True)
+    media_url = serializers.SerializerMethodField()
     likes_count = serializers.SerializerMethodField()
     comments_count = serializers.SerializerMethodField()
     saves_count = serializers.SerializerMethodField()
@@ -77,6 +79,11 @@ class PostSerializer(serializers.ModelSerializer):
     def get_is_saved(self, obj) -> bool:
         return bool(getattr(obj, 'is_saved', False))
 
+    def get_media_url(self, obj) -> str | None:
+        if obj.media:
+            return public_media_url(obj.media, self.context.get('request'))
+        return obj.media_url or None
+
 
 class PostCreateUpdateSerializer(serializers.ModelSerializer):
     goal_id = serializers.IntegerField(required=False, allow_null=True)
@@ -89,6 +96,7 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
             'category_id',
             'title',
             'caption',
+            'media',
             'media_url',
             'media_type',
             'media_tone',
@@ -96,11 +104,24 @@ class PostCreateUpdateSerializer(serializers.ModelSerializer):
         )
         extra_kwargs = {
             'title': {'required': False},
+            'media': {'required': False},
         }
 
     def validate(self, attrs):
         if self.instance is None and not attrs.get('title'):
             raise serializers.ValidationError({'title': 'This field is required.'})
+        # A post must carry an image or video.
+        if self.instance is None and not attrs.get('media') and not attrs.get('media_url'):
+            raise serializers.ValidationError({'media': 'An image or video is required.'})
+        # Infer media_type from the uploaded file so the client doesn't have to.
+        media = attrs.get('media')
+        if media is not None:
+            content_type = getattr(media, 'content_type', '') or ''
+            attrs['media_type'] = (
+                Post.MediaType.VIDEO
+                if content_type.startswith('video')
+                else Post.MediaType.IMAGE
+            )
         goal_id = attrs.pop('goal_id', None)
         if goal_id:
             try:

@@ -128,7 +128,10 @@
       "goals": "Goals",
       "chats": "Chats",
       "profile": "Profile",
-      "createGoal": "Create goal"
+      "createGoal": "Create goal",
+      "wallet": "Wallet",
+      "createPost": "New post",
+      "create": "Create"
     },
     "explore": {
       "title": "Explore",
@@ -330,7 +333,10 @@
       "savePost": "Save Post",
       "defaultCaption": "Proof submitted.",
       "notFound": "This content was not found.",
-      "error": "Something went wrong. Please try again."
+      "error": "Something went wrong. Please try again.",
+      "coverImage": "Cover image (optional)",
+      "coverImageHint": "Add a photo for this goal",
+      "requireMedia": "Add a photo or video to post"
     },
     "contentActions": {
       "title": "Options",
@@ -456,6 +462,42 @@
       "prompt": "Search for someone to share with.",
       "loading": "Searching...",
       "empty": "No users found."
+    },
+    "proof": {
+      "title": "Proof",
+      "description": "Each member submits proof; the rest of the group approves.",
+      "yourProof": "Your proof",
+      "submit": "Submit proof",
+      "resubmit": "Resubmit proof",
+      "notePlaceholder": "Add a note (optional)",
+      "choosePhoto": "Take or choose a photo",
+      "pending": "Waiting for review",
+      "approved": "Approved",
+      "rejected": "Rejected",
+      "teamProofs": "Team proofs",
+      "approve": "Approve",
+      "reject": "Reject",
+      "approveCount": "approve",
+      "rejectCount": "reject",
+      "empty": "No proofs submitted yet",
+      "settled": "Challenge settled — points paid out",
+      "markDone": "Mark as done",
+      "markDoneHint": "Release your staked points",
+      "error": "Something went wrong",
+      "accept": "Accept",
+      "decline": "Decline",
+      "invitePending": "You've been invited to this goal",
+      "inviteHint": "Accepting will stake your points from your wallet."
+    },
+    "wallet": {
+      "title": "Wallet",
+      "points": "Points",
+      "available": "Available",
+      "held": "Staked",
+      "ledger": "Recent activity",
+      "empty": "No activity yet",
+      "balance": "Balance",
+      "openWallet": "Open wallet"
     }
   }
 }

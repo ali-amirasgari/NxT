@@ -13,6 +13,10 @@ export type ExploreTile = {
   size: "large" | "small" | "wide";
   href: string;
   hasCaption?: boolean;
+  /** Actual media to render (post media, or a goal cover image). */
+  mediaUrl?: string | null;
+  /** Background class for text tiles (goals without an image). */
+  coverColor?: string;
 };
 
 export type ExploreSearchResult = {
@@ -44,21 +48,25 @@ export function postToExploreTile(post: Post, index: number): ExploreTile {
     size: tileSize(index),
     href: `/app/posts/${post.id}?from=explore`,
     hasCaption: Boolean(post.caption),
+    mediaUrl: post.media_url ?? null,
   };
 }
 
 const GOAL_TONES: ExploreTile["tone"][] = ["primary", "secondary", "muted", "card"];
 
 export function goalToExploreTile(goal: Goal, index: number): ExploreTile {
+  const hasImage = Boolean(goal.cover_image);
   return {
     id: `goal-${goal.id}`,
     label: goal.title,
     category: goal.category?.name ?? "",
-    media: "goal",
+    media: hasImage ? "image" : "goal",
     tone: GOAL_TONES[index % GOAL_TONES.length],
     size: tileSize(index),
     href: `/app/goals/${goal.id}?from=explore`,
     hasCaption: Boolean(goal.description),
+    mediaUrl: goal.cover_image ?? null,
+    coverColor: goal.cover_color || undefined,
   };
 }
 

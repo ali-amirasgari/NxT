@@ -148,8 +148,18 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+# Uploaded media (proof photos, etc.). Local filesystem for dev; swap the
+# storage backend for S3/Cloudinary in production without touching call sites.
+MEDIA_URL = os.getenv('MEDIA_URL', '/media/')
+MEDIA_ROOT = BASE_DIR / 'media'
+# Public base for media URLs (e.g. http://localhost:8000 in Docker dev). Empty
+# falls back to the request host.
+MEDIA_PUBLIC_BASE_URL = os.getenv('MEDIA_PUBLIC_BASE_URL', '')
+
 AI_SERVICE_URL = os.getenv('AI_SERVICE_URL', 'http://ai-service:8000')
 WALLET_DEFAULT_MONEY_CURRENCY = os.getenv('WALLET_DEFAULT_MONEY_CURRENCY', 'USD')
+# Points granted to a user on signup so they can stake on goals immediately.
+WALLET_SIGNUP_POINTS_GRANT = int(os.getenv('WALLET_SIGNUP_POINTS_GRANT', '1000'))
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

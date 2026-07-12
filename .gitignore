@@ -68,3 +68,6 @@ htmlcov/
 *.tmp
 *.temp
 .gemini/
+
+# Uploaded media (dev local storage)
+backend/media/

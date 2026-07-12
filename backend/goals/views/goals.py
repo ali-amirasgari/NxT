@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.db import transaction
 from django.db.models import Count, Q, Prefetch
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
@@ -14,7 +15,7 @@ from ..serializers import (
     GoalEnvelopeSerializer,
     GoalListEnvelopeSerializer,
 )
-from ..services import sync_goal_members
+from ..services import commit_goal_stakes, resolve_solo_success, sync_goal_members
 
 
 def goal_queryset_for(user):
@@ -111,8 +112,12 @@ class GoalListCreateView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         members = serializer.validated_data.pop('members', None)
-        goal = serializer.save(owner=request.user)
-        sync_goal_members(goal, request.user, members)
+        with transaction.atomic():
+            goal = serializer.save(owner=request.user)
+            sync_goal_members(goal, request.user, members)
+            # Hold each member's stake up-front. If anyone can't cover it the
+            # whole goal (and every prior hold) rolls back.
+            commit_goal_stakes(goal)
         fresh = goal_queryset_for(request.user).get(pk=goal.pk)
         return Response(goal_payload(fresh, request), status=status.HTTP_201_CREATED)
 
@@ -192,8 +197,19 @@ class GoalDetailView(APIView):
         )
         serializer.is_valid(raise_exception=True)
         members = serializer.validated_data.pop('members', None)
-        goal = serializer.save()
-        sync_goal_members(goal, request.user, members)
+        new_status = serializer.validated_data.get('status')
+
+        # Group goals only resolve through proof review — never manual status.
+        if goal.goal_type == Goal.GoalType.GROUP and new_status == Goal.Status.COMPLETED:
+            raise PermissionDenied('Group goals complete through proof review, not manually.')
+
+        with transaction.atomic():
+            goal = serializer.save()
+            sync_goal_members(goal, request.user, members)
+            # Solo self-report: marking the goal done releases the staked points.
+            if goal.goal_type == Goal.GoalType.SOLO and new_status == Goal.Status.COMPLETED:
+                resolve_solo_success(goal)
+
         fresh = goal_queryset_for(request.user).get(pk=goal.pk)
         return Response(goal_payload(fresh, request))
 

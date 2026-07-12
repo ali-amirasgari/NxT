@@ -5,9 +5,13 @@ import type { CommentPayload, PostListParams, PostPayload, SharePayload } from "
 
 export const listPosts = (params?: PostListParams) => socialService.listPosts(params);
 export const getPost = (postId: string | number) => socialService.getPost(postId);
-export const createPost = (payload: PostPayload) => socialService.createPost(payload);
-export const updatePost = (postId: string | number, payload: PostPayload) =>
-  socialService.updatePost(postId, payload);
+export const createPost = (payload: PostPayload, media?: File | null) =>
+  socialService.createPost(payload, media);
+export const updatePost = (
+  postId: string | number,
+  payload: PostPayload,
+  media?: File | null,
+) => socialService.updatePost(postId, payload, media);
 export const deletePost = (postId: string | number) => socialService.deletePost(postId);
 export const likePost = (postId: string | number) => socialService.likePost(postId);
 export const unlikePost = (postId: string | number) => socialService.unlikePost(postId);

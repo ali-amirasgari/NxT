@@ -14,7 +14,11 @@ def sync_goal_members(goal: Goal, owner, members: list[dict] | None = None) -> N
     GoalMember.objects.get_or_create(
         goal=goal,
         user=owner,
-        defaults={'role': GoalMember.Role.OWNER},
+        defaults={
+            'role': GoalMember.Role.OWNER,
+            'stake_amount': goal.stake_points,
+            'status': GoalMember.MemberStatus.ACCEPTED,
+        },
     )
 
     if members is None:
@@ -32,6 +36,8 @@ def sync_goal_members(goal: Goal, owner, members: list[dict] | None = None) -> N
                 goal=goal,
                 user=users_by_id[item['user_id']],
                 role=item.get('role') or GoalMember.Role.MEMBER,
+                stake_amount=goal.stake_points,
+                status=GoalMember.MemberStatus.INVITED,
             )
             for item in members
             if item['user_id'] in users_by_id
